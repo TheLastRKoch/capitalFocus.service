@@ -16,9 +16,80 @@
 </head>
 
 <body>
-    <div class="container mt-5">
-        <button id="openModalBtn" class="btn btn-primary">Open Transaction Details</button>
+
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-white border-bottom sticky-top">
+        <div class="container-fluid">
+            <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#sideMenu" aria-label="Open menu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <span class="navbar-brand mb-0 h5 fw-semibold">Capital Focus</span>
+            <button class="btn btn-link text-dark p-0 position-relative" aria-label="Notifications">
+                <i class="bi bi-bell fs-5"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Side Menu Offcanvas -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item"><a class="nav-link" href="Uncategorized.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active" href="Categories.html">Categories</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+            </ul>
+        </div>
     </div>
+
+    <div class="container mt-5">
+        <!-- <button id="openModalBtn" class="btn btn-primary">Open Transaction Details</button> -->
+
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                <h1 class="display-4">Transactions pending to categorize</h1>
+                <p class="lead">12</p>
+            </div>
+        </div>
+
+
+        <form class="form-inline">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Uber</h5>
+                <p>Date: 10-Apr-2026</p>
+                <p>Amount: 10.000</p>
+                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
+            </div>
+        </div>
+         <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Steam</h5>
+                <p>Date: 10-Apr-2026</p>
+                <p>Amount: 200.000</p>
+                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
+            </div>
+        </div>
+         <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Megasuper</h5>
+                <p>Date: 10-Apr-2026</p>
+                <p>Amount: 60.000</p>
+                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
+            </div>
+        </div>
+    </div>
+
+
 
     <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel"
         aria-hidden="true">
