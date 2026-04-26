@@ -4,19 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Details Modal</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <title>Dashboard - Capital Focus</title>
+    <link rel="icon" href="../static/imgs/icon-light-32x32.png" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="../static/imgs/icon-dark-32x32.png" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="../static/imgs/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../static/imgs/apple-icon.png">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/styles/styles.css">
     <style>
+        .transaction-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .transaction-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+        }
         .form-scroll {
-            max-height: 300px;
+            max-height: 400px;
             overflow-y: auto;
+            padding-right: 10px;
+        }
+        .form-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .form-scroll::-webkit-scrollbar-thumb {
+            background: #e0e0e0;
+            border-radius: 10px;
         }
     </style>
 </head>
 
 <body>
-
     <!-- Header -->
     <nav class="navbar navbar-light bg-white border-bottom sticky-top">
         <div class="container-fluid">
@@ -39,201 +61,191 @@
         </div>
         <div class="offcanvas-body">
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="Uncategorized.html">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link active" href="Categories.html">Categories</a></li>
+                <li class="nav-item"><a class="nav-link active" href="UncategorizeItems.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="Categories.html">Categories</a></li>
+                <li class="nav-item"><a class="nav-link" href="Budgets.html">Budgets</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
             </ul>
         </div>
     </div>
 
-    <div class="container mt-5">
-        <!-- <button id="openModalBtn" class="btn btn-primary">Open Transaction Details</button> -->
-
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <h1 class="display-4">Transactions pending to categorize</h1>
-                <p class="lead">12</p>
+    <!-- Main Content -->
+    <main class="container-fluid py-4 bg-light min-vh-100">
+        <!-- Summary card -->
+        <div class="card summary-card shadow-sm mb-4" style="max-width: 400px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="text-muted fw-bold mb-0">PENDING TRANSACTIONS</h6>
+                </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="summary-item bg-warning-subtle">
+                            <span class="summary-label">To Categorize</span>
+                            <span class="summary-value text-warning">12</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-
-        <form class="form-inline">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Uber</h5>
-                <p>Date: 10-Apr-2026</p>
-                <p>Amount: 10.000</p>
-                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
+        <!-- Search Bar -->
+        <div class="mb-4">
+            <div class="input-group shadow-sm rounded-3 overflow-hidden" style="max-width: 500px;">
+                <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control border-0 py-2" placeholder="Search transactions..." aria-label="Search">
             </div>
         </div>
-         <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Steam</h5>
-                <p>Date: 10-Apr-2026</p>
-                <p>Amount: 200.000</p>
-                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
+
+        <!-- Transaction Cards -->
+        <div class="row g-3" id="transactionList">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Uber', '10-Apr-2026', '10.000')">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">Uber</h6>
+                            <span class="badge bg-light text-dark border">Pending</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
+                            <div class="fw-bold text-dark mt-1 fs-5">10.000</div>
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100 rounded-pill">Categorize</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Steam', '10-Apr-2026', '200.000')">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">Steam</h6>
+                            <span class="badge bg-light text-dark border">Pending</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
+                            <div class="fw-bold text-dark mt-1 fs-5">200.000</div>
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100 rounded-pill">Categorize</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Megasuper', '10-Apr-2026', '60.000')">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="fw-bold mb-0">Megasuper</h6>
+                            <span class="badge bg-light text-dark border">Pending</span>
+                        </div>
+                        <div class="text-muted small mb-3">
+                            <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
+                            <div class="fw-bold text-dark mt-1 fs-5">60.000</div>
+                        </div>
+                        <button class="btn btn-primary btn-sm w-100 rounded-pill">Categorize</button>
+                    </div>
+                </div>
             </div>
         </div>
-         <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Megasuper</h5>
-                <p>Date: 10-Apr-2026</p>
-                <p>Amount: 60.000</p>
-                <button id="openModalBtn" class="btn btn-primary">Categorize</button>
-            </div>
-        </div>
-    </div>
+    </main>
 
-
-
-    <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+    <!-- Transaction Categorization Modal -->
+    <div class="modal fade" id="transactionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="transactionModalLabel">Transaction Details</h5>
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="transactionModalLabel">Categorize Transaction</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="transactionForm" class="form-scroll">
-                        <!-- Form fields will be dynamically added here -->
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">COMMERCE</label>
+                            <input type="text" class="form-control bg-light border-0" id="modalCommerce" readonly>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-bold">DATE</label>
+                                <input type="text" class="form-control bg-light border-0" id="modalDate" readonly>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label text-muted small fw-bold">AMOUNT</label>
+                                <input type="text" class="form-control bg-light border-0" id="modalAmount" readonly>
+                            </div>
+                        </div>
+                        <hr class="my-4 text-muted opacity-25">
+                        <div class="mb-3">
+                            <label for="budgetSelect" class="form-label fw-bold">Budget</label>
+                            <select class="form-select" id="budgetSelect">
+                                <option value="Budget1">January 2026</option>
+                                <option value="Budget2">February 2026</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categorySelect" class="form-label fw-bold">Category</label>
+                            <select class="form-select" id="categorySelect">
+                                <option value="Payments">Payments</option>
+                                <option value="Food">Food</option>
+                                <option value="Luxuries">Luxuries</option>
+                            </select>
+                        </div>
+                        <div id="additionalDetails" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">CITY AND COUNTRY</label>
+                                <input type="text" class="form-control bg-light border-0" value="844-5052993, Pais no Definido" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small fw-bold">CARD</label>
+                                <input type="text" class="form-control bg-light border-0" value="************3382" readonly>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="toggleDetails">Show More Details</button>
                     </form>
-                    <a href="#" id="showMoreLink" class="mt-3 d-block">Show More Details</a>
                 </div>
-                <div class="modal-footer justify-content-between">
+                <div class="modal-footer border-0 pt-0 justify-content-between">
+                    <button type="button" class="btn btn-light rounded-circle" id="prevButton"><i class="bi bi-chevron-left"></i></button>
                     <div>
-                        <button type="button" class="btn btn-primary me-2" id="prevButton">
-                            <i class="bi bi-arrow-left"></i>
-                        </button>
-                        <button type="button" class="btn btn-success me-2" id="saveButton">
-                            <i class="bi bi-save"></i> Save
-                        </button>
-                        <button type="button" class="btn btn-primary" id="nextButton">
-                            <i class="bi bi-arrow-right"></i>
-                        </button>
+                        <button type="button" class="btn btn-danger me-2 rounded-pill px-3" id="deleteButton">Delete</button>
+                        <button type="button" class="btn btn-primary rounded-pill px-4" id="saveButton">Save</button>
                     </div>
-                    <button type="button" class="btn btn-danger" id="deleteButton">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <button type="button" class="btn btn-light rounded-circle" id="nextButton"><i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+        
+        function openCategorizeModal(commerce, date, amount) {
+            document.getElementById('modalCommerce').value = commerce;
+            document.getElementById('modalDate').value = date;
+            document.getElementById('modalAmount').value = amount;
+            
+            // Reset additional details
+            document.getElementById('additionalDetails').classList.add('d-none');
+            document.getElementById('toggleDetails').textContent = 'Show More Details';
+            
+            transactionModal.show();
+        }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const openModalBtn = document.getElementById('openModalBtn');
-            const transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
-            const transactionForm = document.getElementById('transactionForm');
-            const showMoreLink = document.getElementById('showMoreLink');
-
-            const initialData = {
-                "Budget": ["Budget1", "Budget2"],
-                "Category": ["CategoryA", "CategoryB"],
-                "Date": "Sep 14, 2022, 00:00",
-                "Commerce": "Netflix",
-                "Amount": "15000"
-            };
-
-            const additionalData = {
-                "City and country": "844-5052993, Pais no Definido",
-                "Card": "************3382",
-                "Authorization": "411284",
-                "Reference": "225710411284",
-                "Type of transaction": "Compra"
-            };
-
-            function createFormField(label, value) {
-                const div = document.createElement('div');
-                div.className = 'mb-3';
-
-                if (Array.isArray(value)) {
-                    div.innerHTML = `
-                <label class="form-label">${label}</label>
-                <select class="form-select" name="${label.toLowerCase()}">
-                    ${value.map(option => `<option value="${option}">${option}</option>`).join('')}
-                </select>
-            `;
-                } else {
-                    div.innerHTML = `
-                <label class="form-label">${label}</label>
-                <input type="text" class="form-control" value="${value}" readonly>
-            `;
-                }
-                return div;
+        document.getElementById('toggleDetails').addEventListener('click', function() {
+            const details = document.getElementById('additionalDetails');
+            if (details.classList.contains('d-none')) {
+                details.classList.remove('d-none');
+                this.textContent = 'Hide Additional Details';
+            } else {
+                details.classList.add('d-none');
+                this.textContent = 'Show More Details';
             }
-
-            function populateForm(data) {
-                for (const [key, value] of Object.entries(data)) {
-                    transactionForm.appendChild(createFormField(key, value));
-                }
-            }
-
-            let additionalContentVisible = false;
-
-            openModalBtn.addEventListener('click', function () {
-                transactionForm.innerHTML = '';
-                populateForm(initialData);
-                showMoreLink.style.display = 'block';
-                showMoreLink.textContent = 'Show More Details';
-                additionalContentVisible = false;
-                transactionModal.show();
-            });
-
-            showMoreLink.addEventListener('click', function (e) {
-                e.preventDefault();
-                if (!additionalContentVisible) {
-                    populateForm(additionalData);
-                    this.textContent = 'Hide Additional Details';
-                    additionalContentVisible = true;
-                } else {
-                    // Remove additional fields
-                    Object.keys(additionalData).forEach(key => {
-                        const field = transactionForm.querySelector(`input[value="${additionalData[key]}"]`);
-                        if (field) {
-                            field.closest('.mb-3').remove();
-                        }
-                    });
-                    this.textContent = 'Show More Details';
-                    additionalContentVisible = false;
-                }
-            });
-
-            const prevButton = document.getElementById('prevButton');
-            const saveButton = document.getElementById('saveButton');
-            const nextButton = document.getElementById('nextButton');
-            const deleteButton = document.getElementById('deleteButton');
-
-            prevButton.addEventListener('click', function () {
-                console.log('Previous button clicked');
-                // Add functionality for previous button
-            });
-
-            saveButton.addEventListener('click', function () {
-                console.log('Save button clicked');
-                // Add functionality for save button
-            });
-
-            nextButton.addEventListener('click', function () {
-                console.log('Next button clicked');
-                // Add functionality for next button
-            });
-
-            deleteButton.addEventListener('click', function () {
-                console.log('Delete button clicked');
-                // Add functionality for delete button
-            });
         });
 
-
-
+        document.getElementById('saveButton').addEventListener('click', function() {
+            // Logic to save
+            console.log('Saving categorization...');
+            transactionModal.hide();
+            // Show toast if script.js was available, but here we just hide
+        });
     </script>
 </body>
 
