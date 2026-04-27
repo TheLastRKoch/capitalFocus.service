@@ -112,7 +112,7 @@
                                     <small class="text-muted">Current Budget</small>
                                 </div>
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3">View</button>
+                                    <li class="btn btn-outline-primary btn-sm rounded-pill px-3"><a class="nav-link" href="BudgetDescription.html">View</a></li>
                                     <button class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-toggle="modal"
                                         data-bs-target="#editBudgetModal">
                                         <i class="bi bi-pencil"></i>
@@ -200,7 +200,7 @@
                             <input type="month" class="form-control" id="budgetName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="initialSalary" class="form-label">Initial Salary</label>
+                            <label for="initialSalary" class="form-label">Budget projection</label>
                             <input type="number" class="form-control" id="initialSalary" placeholder="0.00">
                         </div>
                     </form>
@@ -226,6 +226,10 @@
                         <div class="mb-3">
                             <label for="budgetName" class="form-label">Budget Title</label>
                             <input type="text" class="form-control" id="budgetName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="initialSalary" class="form-label">Budget projection</label>
+                            <input type="number" class="form-control" id="initialSalary" placeholder="0.00">
                         </div>
                         <div class="mb-3">
                             <label for="initialSalary" class="form-label">Status</label>
