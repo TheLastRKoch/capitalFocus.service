@@ -39,7 +39,7 @@
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- Header (Heuristic 4: Consistency and standards) -->
     <nav class="navbar navbar-light bg-white border-bottom sticky-top">
         <div class="container-fluid">
             <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="offcanvas"
@@ -53,7 +53,7 @@
         </div>
     </nav>
 
-    <!-- Side Menu Offcanvas -->
+    <!-- Side Menu Offcanvas (Heuristic 3: User control and freedom) -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Menu</h5>
@@ -61,18 +61,18 @@
         </div>
         <div class="offcanvas-body">
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link active" href="UncategorizeItems.html">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="Budgets.html">Budgets</a></li>
-                <li class="nav-item"><a class="nav-link" href="BudgetDescription.html">Current Budget</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+                <li class="nav-item"><a class="nav-link active text-primary fw-bold" href="UncategorizeItems.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="Budgets.html">Budgets</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="BudgetDescription.html">Current Budget</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="#">Reports</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="#">Settings</a></li>
             </ul>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="container-fluid py-4 bg-light min-vh-100">
-        <!-- Summary card -->
+        <!-- Summary card (Heuristic 1: Visibility of system status) -->
         <div class="card summary-card shadow-sm mb-4" style="max-width: 400px;">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -89,7 +89,7 @@
             </div>
         </div>
 
-        <!-- Search Bar -->
+        <!-- Search Bar (Heuristic 7: Flexibility and efficiency of use) -->
         <div class="mb-4">
             <div class="input-group shadow-sm rounded-3 overflow-hidden" style="max-width: 500px;">
                 <span class="input-group-text bg-white border-0"><i class="bi bi-search text-muted"></i></span>
@@ -97,14 +97,15 @@
             </div>
         </div>
 
-        <!-- Transaction Cards -->
+        <!-- Transaction Cards (Heuristic 8: Aesthetic and minimalist design) -->
         <div class="row g-3" id="transactionList">
+            <!-- Uber Transaction -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Uber', '10-Apr-2026', '10.000')">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="fw-bold mb-0">Uber</h6>
-                            <span class="badge bg-light text-dark border">Pending</span>
+                            <span class="badge bg-warning-subtle text-warning border-0">Pending</span>
                         </div>
                         <div class="text-muted small mb-3">
                             <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
@@ -114,12 +115,13 @@
                     </div>
                 </div>
             </div>
+            <!-- Steam Transaction -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Steam', '10-Apr-2026', '200.000')">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="fw-bold mb-0">Steam</h6>
-                            <span class="badge bg-light text-dark border">Pending</span>
+                            <span class="badge bg-warning-subtle text-warning border-0">Pending</span>
                         </div>
                         <div class="text-muted small mb-3">
                             <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
@@ -129,12 +131,13 @@
                     </div>
                 </div>
             </div>
+            <!-- Megasuper Transaction -->
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm transaction-card" onclick="openCategorizeModal('Megasuper', '10-Apr-2026', '60.000')">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="fw-bold mb-0">Megasuper</h6>
-                            <span class="badge bg-light text-dark border">Pending</span>
+                            <span class="badge bg-warning-subtle text-warning border-0">Pending</span>
                         </div>
                         <div class="text-muted small mb-3">
                             <div><i class="bi bi-calendar3 me-2"></i>10-Apr-2026</div>
@@ -147,8 +150,8 @@
         </div>
     </main>
 
-    <!-- Transaction Categorization Modal -->
-    <div class="modal fade" id="transactionModal" tabindex="-1">
+    <!-- Transaction Categorization Modal (Heuristic 5: Error prevention) -->
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-labelledby="transactionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
@@ -159,29 +162,31 @@
                     <form id="transactionForm" class="form-scroll">
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">COMMERCE</label>
-                            <input type="text" class="form-control bg-light border-0" id="modalCommerce" readonly>
+                            <input type="text" class="form-control bg-light border-0" id="modalCommerce" readonly tabindex="-1">
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
                                 <label class="form-label text-muted small fw-bold">DATE</label>
-                                <input type="text" class="form-control bg-light border-0" id="modalDate" readonly>
+                                <input type="text" class="form-control bg-light border-0" id="modalDate" readonly tabindex="-1">
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-muted small fw-bold">AMOUNT</label>
-                                <input type="text" class="form-control bg-light border-0" id="modalAmount" readonly>
+                                <input type="text" class="form-control bg-light border-0" id="modalAmount" readonly tabindex="-1">
                             </div>
                         </div>
                         <hr class="my-4 text-muted opacity-25">
                         <div class="mb-3">
                             <label for="budgetSelect" class="form-label fw-bold">Budget</label>
-                            <select class="form-select" id="budgetSelect">
+                            <select class="form-select border-0 bg-light" id="budgetSelect" required>
+                                <option value="" selected disabled>Select a budget...</option>
                                 <option value="Budget1">January 2026</option>
                                 <option value="Budget2">February 2026</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="categorySelect" class="form-label fw-bold">Category</label>
-                            <select class="form-select" id="categorySelect">
+                            <select class="form-select border-0 bg-light" id="categorySelect" required>
+                                <option value="" selected disabled>Select a category...</option>
                                 <option value="Payments">Payments</option>
                                 <option value="Food">Food</option>
                                 <option value="Luxuries">Luxuries</option>
@@ -190,23 +195,23 @@
                         <div id="additionalDetails" class="d-none">
                             <div class="mb-3">
                                 <label class="form-label text-muted small fw-bold">CITY AND COUNTRY</label>
-                                <input type="text" class="form-control bg-light border-0" value="844-5052993, Pais no Definido" readonly>
+                                <input type="text" class="form-control bg-light border-0" value="844-5052993, Pais no Definido" readonly tabindex="-1">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label text-muted small fw-bold">CARD</label>
-                                <input type="text" class="form-control bg-light border-0" value="************3382" readonly>
+                                <input type="text" class="form-control bg-light border-0" value="************3382" readonly tabindex="-1">
                             </div>
                         </div>
-                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" id="toggleDetails">Show More Details</button>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-primary fw-bold" id="toggleDetails">Show More Details</button>
                     </form>
                 </div>
                 <div class="modal-footer border-0 pt-0 justify-content-between">
-                    <button type="button" class="btn btn-light rounded-circle" id="prevButton"><i class="bi bi-chevron-left"></i></button>
+                    <button type="button" class="btn btn-light rounded-circle shadow-sm" id="prevButton" title="Previous"><i class="bi bi-chevron-left"></i></button>
                     <div>
-                        <button type="button" class="btn btn-danger me-2 rounded-pill px-3" id="deleteButton">Delete</button>
-                        <button type="button" class="btn btn-primary rounded-pill px-4" id="saveButton">Save</button>
+                        <button type="button" class="btn btn-outline-danger me-2 rounded-pill px-3 border-0" id="deleteButton">Delete</button>
+                        <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveButton">Save Changes</button>
                     </div>
-                    <button type="button" class="btn btn-light rounded-circle" id="nextButton"><i class="bi bi-chevron-right"></i></button>
+                    <button type="button" class="btn btn-light rounded-circle shadow-sm" id="nextButton" title="Next"><i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -222,7 +227,7 @@
             document.getElementById('modalDate').value = date;
             document.getElementById('modalAmount').value = amount;
             
-            // Reset additional details
+            // Reset additional details (Heuristic 3: User control and freedom)
             document.getElementById('additionalDetails').classList.add('d-none');
             document.getElementById('toggleDetails').textContent = 'Show More Details';
             
@@ -241,9 +246,15 @@
         });
 
         document.getElementById('saveButton').addEventListener('click', function() {
-            // Logic to save
-            console.log('Saving categorization...');
-            transactionModal.hide();
+            const form = document.getElementById('transactionForm');
+            if (form.checkValidity()) {
+                // Heuristic 1: Visibility of system status
+                console.log('Saving categorization...');
+                transactionModal.hide();
+                // In a real app, a toast would show here (handled by script.js)
+            } else {
+                form.reportValidity(); // Heuristic 9: Help users recognize, diagnose, and recover from errors
+            }
         });
     </script>
 </body>

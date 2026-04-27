@@ -17,7 +17,7 @@
 </head>
 
 <body>
-    <!-- Header -->
+    <!-- Header (Heuristic 4: Consistency and standards) -->
     <nav class="navbar navbar-light bg-white border-bottom sticky-top">
         <div class="container-fluid">
             <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="offcanvas"
@@ -31,7 +31,7 @@
         </div>
     </nav>
 
-    <!-- Side Menu Offcanvas -->
+    <!-- Side Menu Offcanvas (Heuristic 3: User control and freedom) -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="sideMenu">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title">Menu</h5>
@@ -39,39 +39,39 @@
         </div>
         <div class="offcanvas-body">
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link" href="UncategorizeItems.html">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="Budgets.html">Budgets</a></li>
-                <li class="nav-item"><a class="nav-link active" href="BudgetDescription.html">Current Budget</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Reports</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="UncategorizeItems.html">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="Budgets.html">Budgets</a></li>
+                <li class="nav-item"><a class="nav-link active text-primary fw-bold" href="BudgetDescription.html">Current Budget</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="#">Reports</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="#">Settings</a></li>
             </ul>
         </div>
     </div>
 
     <!-- Main Content -->
     <main class="container-fluid py-4 bg-light min-vh-100">
-        <!-- Floating Add Button -->
+        <!-- Floating Add Button (Heuristic 7: Flexibility and efficiency of use) -->
         <button class="btn btn-primary rounded-circle fab-button shadow" data-bs-toggle="modal"
-            data-bs-target="#addCategoryModal">
+            data-bs-target="#addCategoryModal" title="Add New Category">
             <i class="bi bi-plus-lg"></i>
         </button>
 
-        <!-- Page Title & Navigation -->
+        <!-- Page Title & Navigation (Heuristic 3: User control and freedom) -->
         <div class="d-flex align-items-center mb-4">
-            <a href="Budgets.html" class="btn btn-link text-dark p-0 me-3"><i class="bi bi-arrow-left fs-4"></i></a>
+            <a href="Budgets.html" class="btn btn-link text-dark p-0 me-3 shadow-none" title="Back to Budgets"><i class="bi bi-arrow-left fs-4"></i></a>
             <div>
                 <h4 class="fw-bold mb-0">January 2026</h4>
                 <small class="text-muted">Budget Details</small>
             </div>
         </div>
 
-        <!-- Summary card -->
+        <!-- Summary card (Heuristic 1: Visibility of system status) -->
         <div class="card summary-card shadow-sm mb-4" style="max-width: 400px;">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h6 class="text-muted fw-bold mb-0">OVERVIEW</h6>
-                    <button class="btn btn-light edit-summary-btn" id="btnEditSummary" data-bs-toggle="modal"
-                        data-bs-target="#editSummary" aria-label="Edit Summary">
+                    <button class="btn btn-light edit-summary-btn rounded-circle" id="btnEditSummary" data-bs-toggle="modal"
+                        data-bs-target="#editSummary" aria-label="Edit Summary" title="Edit Budget Overview">
                         <i class="bi bi-pencil-fill fs-6"></i>
                     </button>
                 </div>
@@ -92,7 +92,7 @@
             </div>
         </div>
 
-        <!-- Accordion Categories -->
+        <!-- Accordion Categories (Heuristic 8: Aesthetic and minimalist design) -->
         <div class="accordion" id="categoriesAccordion">
             <!-- Payments Section -->
             <div class="card mb-3 border-0 shadow-sm" data-category="payments">
@@ -105,8 +105,8 @@
                             <span class="fw-medium">Payments</span>
                             <span class="text-muted ms-3 category-total">250.000</span>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn" data-bs-toggle="modal"
-                            data-bs-target="#editCategoryModal">
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn border-0" data-bs-toggle="modal"
+                            data-bs-target="#editCategoryModal" title="Edit Category">
                             <i class="bi bi-pencil me-1"></i> Edit
                         </button>
                     </div>
@@ -156,8 +156,8 @@
                             <span class="fw-medium">Food</span>
                             <span class="text-muted ms-3 category-total">0</span>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn" data-bs-toggle="modal"
-                            data-bs-target="#editCategoryModal">
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn border-0" data-bs-toggle="modal"
+                            data-bs-target="#editCategoryModal" title="Edit Category">
                             <i class="bi bi-pencil me-1"></i> Edit
                         </button>
                     </div>
@@ -195,8 +195,8 @@
                             <span class="fw-medium">Luxuries</span>
                             <span class="text-muted ms-3 category-total">0</span>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn" data-bs-toggle="modal"
-                            data-bs-target="#editCategoryModal">
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 edit-btn border-0" data-bs-toggle="modal"
+                            data-bs-target="#editCategoryModal" title="Edit Category">
                             <i class="bi bi-pencil me-1"></i> Edit
                         </button>
                     </div>
@@ -225,13 +225,13 @@
         </div>
     </main>
 
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1">
+    <!-- Edit Category Modal (Heuristic 5: Error prevention) -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Edit Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="editCategoryModalLabel">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editCategoryForm">
@@ -241,7 +241,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="editCategoryBudget" class="form-label text-muted small fw-bold">BUDGET</label>
-                            <input type="number" class="form-control bg-light border-0" id="editCategoryBudget" placeholder="0.00">
+                            <input type="number" class="form-control bg-light border-0" id="editCategoryBudget" placeholder="0.00" required>
                         </div>
                         <div class="mb-3">
                             <label for="editCategoryBalance" class="form-label text-muted small fw-bold">BALANCE</label>
@@ -252,19 +252,19 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="saveEditCategoryBtn">Save Changes</button>
+                    <button type="submit" form="editCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveEditCategoryBtn">Save Changes</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- New Category Modal -->
-    <div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <!-- New Category Modal (Heuristic 5: Error prevention) -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">New Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel">New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addCategoryForm">
@@ -274,25 +274,25 @@
                         </div>
                         <div class="mb-3">
                             <label for="newCategoryBudget" class="form-label text-muted small fw-bold">BUDGET</label>
-                            <input type="number" class="form-control bg-light border-0" id="newCategoryBudget" placeholder="0.00">
+                            <input type="number" class="form-control bg-light border-0" id="newCategoryBudget" placeholder="0.00" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="saveNewCategoryBtn">Create Category</button>
+                    <button type="submit" form="addCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveNewCategoryBtn">Create Category</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Summary Modal -->
-    <div class="modal fade" id="editSummary" tabindex="-1">
+    <!-- Edit Summary Modal (Heuristic 3: User control and freedom) -->
+    <div class="modal fade" id="editSummary" tabindex="-1" aria-labelledby="editSummaryLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Edit Summary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold" id="editSummaryLabel">Edit Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="editSummaryForm">
@@ -308,7 +308,7 @@
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4" id="saveSummaryBtn">Save Changes</button>
+                    <button type="submit" form="editSummaryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveSummaryBtn">Save Changes</button>
                 </div>
             </div>
         </div>
