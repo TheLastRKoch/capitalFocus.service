@@ -10,9 +10,9 @@ def index():
     return jsonify(budgets_repo.all()), 200
 
 @bp.route('/active', methods=['GET'])
-def uncategorize():
-    return jsonify(budgets_repo.get_uncategorized()), 200
+def active():
+    return jsonify(budgets_repo.get_by_status('active')), 200
 
 @bp.route('/inactive', methods=['GET'])
-def uncategorize():
-    return jsonify(budgets_repo.get_uncategorized()), 200
+def inactive():
+    return jsonify(budgets_repo.get_by_status('inactive')), 200

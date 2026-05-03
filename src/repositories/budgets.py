@@ -18,11 +18,18 @@ class BudgetsRepository:
         """
         return self.teable.read(TEABLE_BUDGETS)
     
-    def get_by_status(self, status):
-        budgets = self.all()
-        filtered_budgets = []
-        for budget in budgets:
-            status = budget.get('fields',{}).get('status')
-            if status == status:
-                filtered_budgets.append(budget)
-        return filtered_budgets
+    def get_by_status(self, target_status: str) -> list:
+        """
+        Retrieve budgets filtered by status.
+
+        Args:
+            target_status (str): The status to filter by (e.g., 'active', 'inactive').
+
+        Returns:
+            list: A list of budgets matching the given status.
+        """
+        budgets = self.all().get('records', [])
+        return [
+            budget for budget in budgets 
+            if budget.get('fields', {}).get('status') == target_status
+        ]
