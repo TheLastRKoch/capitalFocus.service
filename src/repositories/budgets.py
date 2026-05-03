@@ -17,3 +17,12 @@ class BudgetsRepository:
             dict: The JSON response containing the list of budgets.
         """
         return self.teable.read(TEABLE_BUDGETS)
+    
+    def get_by_status(self, status):
+        budgets = self.all()
+        filtered_budgets = []
+        for budget in budgets:
+            status = budget.get('fields',{}).get('status')
+            if status == status:
+                filtered_budgets.append(budget)
+        return filtered_budgets

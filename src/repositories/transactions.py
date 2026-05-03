@@ -17,3 +17,12 @@ class TransactionsRepository:
             dict: The JSON response containing the list of transactions.
         """
         return self.teable.read(TEABLE_TRANSACTIONS)
+
+    def get_uncategorized(self):
+        transactions = self.all()
+        uncategorized_transactions = []
+        for transaction in transactions:
+            status = transaction.get('fields',{}).get('status')
+            if status == 'Uncategorized':
+                uncategorized_transactions.append(transaction)
+        return uncategorized_transactions
