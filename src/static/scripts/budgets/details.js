@@ -49,43 +49,46 @@ class BudgetDetailsManager {
 
     async fetchBudgetDetails() {
         try {
-            // This endpoint should return budget + categories + entries
-            // For now, let's assume /api/budgets/<id> returns this info
-            const response = await fetch(`/api/budgets/${this.budgetId}`);
-            if (!response.ok) throw new Error('Failed to fetch budget details');
-            
-            const budget = await response.json();
-            this.renderDetails(budget);
+            const [budgetRes, sectionsRes] = await Promise.all([
+                fetch(`/api/budgets/${this.budgetId}`),
+                fetch(`/api/budgets/${this.budgetId}/sections`)
+            ]);
+
+            if (!budgetRes.ok || !sectionsRes.ok) throw new Error('Failed to fetch budget details');
+
+            this.budget = await budgetRes.json();
+            this.sections = await sectionsRes.json();
+
+            this.renderDetails(this.budget, this.sections);
         } catch (error) {
             console.error('Error fetching budget details:', error);
-            this.categoriesLoader.innerHTML = '<p class="text-danger">Failed to load budget details.</p>';
+            this.renderError('Failed to load budget details.');
         }
     }
 
-    renderDetails(budget) {
+    renderDetails(budget, sections) {
         let fields = budget[0].fields;
         this.budgetTitle.textContent = fields.name || 'Budget Details';
         this.projectionValue.textContent = fields.projection || '0';
         this.availableValue.textContent = fields.available || '0';
         
-        // Mocking categories for now as the repository/API isn't fully ready
-        const categories = fields.categories || [];
-        this.renderCategories(categories);
+        this.renderSections(sections);
     }
 
-    renderCategories(categories) {
+    renderSections(sections) {
         this.categoriesLoader.classList.add('d-none');
         
-        if (categories.length === 0) {
-            this.categoriesAccordion.innerHTML = '<div class="text-center py-4 text-muted">No categories found for this budget.</div>';
+        if (sections.length === 0) {
+            this.categoriesAccordion.innerHTML = '<div class="text-center py-4 text-muted">No sections found for this budget.</div>';
             return;
         }
 
-        this.categoriesAccordion.innerHTML = categories.map((cat, index) => this.createCategoryAccordionItem(cat, index)).join('');
+        this.categoriesAccordion.innerHTML = sections.map((sec, index) => this.createSectionAccordionItem(sec, index)).join('');
     }
 
-    createCategoryAccordionItem(category, index) {
-        const { name, total, entries = [] } = category;
+    createSectionAccordionItem(section, index) {
+        let fields = section.fields;
+        let entries = []
         const collapseId = `categoryCollapse${index}`;
         
         return `
@@ -95,8 +98,9 @@ class BudgetDetailsManager {
                         <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
                             data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
-                            <span class="fw-medium">${name}</span>
-                            <span class="text-muted ms-3">${total || 0}</span>
+                            <span class="fw-medium">${fields.label}</span>
+                            <span class="text-muted ms-3">${fields.projection || 0}</span>
+                            <span class="text-muted ms-3">${fields.projection || 0}</span>
                         </button>
                         <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 border-0">
                             <i class="bi bi-pencil me-1"></i> Edit
