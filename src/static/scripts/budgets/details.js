@@ -63,7 +63,7 @@ class BudgetDetailsManager {
     }
 
     renderDetails(budget) {
-        const { fields } = budget;
+        let fields = budget[0].fields;
         this.budgetTitle.textContent = fields.name || 'Budget Details';
         this.projectionValue.textContent = fields.projection || '0';
         this.availableValue.textContent = fields.available || '0';

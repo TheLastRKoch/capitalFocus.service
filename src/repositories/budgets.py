@@ -28,8 +28,15 @@ class BudgetsRepository:
         Returns:
             list: A list of budgets matching the given status.
         """
-        budgets = self.all().get('records', [])
+        budgets = self.all()
         return [
             budget for budget in budgets 
             if budget.get('fields', {}).get('status') == target_status
         ]
+    
+    def get_by_id(self, id):
+        budgets = self.all()
+        return [
+            budget for budget in budgets 
+            if budget.get('id') == id
+        ] 

@@ -1,13 +1,15 @@
 from flask import Blueprint, jsonify
 from repositories.transactions import TransactionsRepository
 
-bp = Blueprint('api/transactions', __name__)
+prefix = 'api/transactions'
+bp = Blueprint(prefix, __name__, url_prefix=f"/{prefix}")
 transactions_repo = TransactionsRepository()
 
 
 @bp.route('/', methods=['GET'])
 def index():
     return jsonify(transactions_repo.all()), 200
+
 
 @bp.route('/uncategorize', methods=['GET'])
 def uncategorize():
