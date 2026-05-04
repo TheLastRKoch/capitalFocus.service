@@ -9,20 +9,26 @@ class TransactionsRepository:
         """Initialize the transactions repository with a Teable service instance."""
         self.teable = TeableService()
 
-    def all(self) -> dict:
+    def all(self) -> list:
         """
         Retrieve a list of transactions from the Teable service.
 
         Returns:
-            dict: The JSON response containing the list of transactions.
+            list: A list of transaction records.
         """
         return self.teable.read(TEABLE_TRANSACTIONS)
 
-    def get_uncategorized(self):
+    def get_uncategorized(self) -> list:
+        """
+        Retrieve all transactions with an 'Uncategorized' status.
+
+        Returns:
+            list: A list of uncategorized transaction records.
+        """
         transactions = self.all()
         uncategorized_transactions = []
         for transaction in transactions:
-            status = transaction.get('fields',{}).get('status')
+            status = transaction.get('fields', {}).get('status')
             if status == 'Uncategorized':
                 uncategorized_transactions.append(transaction)
         return uncategorized_transactions
