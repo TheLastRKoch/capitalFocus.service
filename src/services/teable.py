@@ -15,7 +15,7 @@ class TeableService:
         """
         return {'Authorization': 'Bearer ' + TEABLE_API_TOKEN}
 
-    def read(self, table_id: str) -> dict:
+    def read(self, table_id: str) -> list:
         """
         Read all records from a specific table by its ID.
 
@@ -23,7 +23,7 @@ class TeableService:
             table_id (str): The unique identifier of the table.
 
         Returns:
-            dict: The JSON response containing the table records.
+            list: A list of records from the table.
         """
         url = f"{TEABLE_URL}/api/table/{table_id}/record"
 
