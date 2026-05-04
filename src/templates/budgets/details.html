@@ -51,7 +51,7 @@
     <main class="container-fluid py-4 bg-light min-vh-100">
         <!-- Floating Add Button (Heuristic 7: Flexibility and efficiency of use) -->
         <button class="btn btn-primary rounded-circle fab-button shadow" data-bs-toggle="modal"
-            data-bs-target="#addCategoryModal" title="Add New Category">
+            data-bs-target="#addCategoryModal" title="Add Section">
             <i class="bi bi-plus-lg"></i>
         </button>
 
@@ -134,24 +134,28 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel">New Category</h5>
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel">New Section</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addCategoryForm">
                         <div class="mb-3">
-                            <label for="newCategoryName" class="form-label text-muted small fw-bold">CATEGORY NAME</label>
+                            <label for="newCategoryName" class="form-label text-muted small fw-bold">SECTION NAME</label>
                             <input type="text" class="form-control bg-light border-0" id="newCategoryName" required>
                         </div>
                         <div class="mb-3">
-                            <label for="newCategoryBudget" class="form-label text-muted small fw-bold">BUDGET</label>
+                            <label for="newCategoryBudget" class="form-label text-muted small fw-bold">CATEGORY</label>
+                            <input type="number" class="form-control bg-light border-0" id="newCategoryBudget" placeholder="0.00" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newCategoryBudget" class="form-label text-muted small fw-bold">PROJECTION</label>
                             <input type="number" class="form-control bg-light border-0" id="newCategoryBudget" placeholder="0.00" required>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="addCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveNewCategoryBtn">Create Category</button>
+                    <button type="submit" form="addCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveNewCategoryBtn">Save</button>
                 </div>
             </div>
         </div>
