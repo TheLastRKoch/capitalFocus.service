@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template
-from services.transactions import TransactionService
 
-def init_transactions_blueprint():
-    bp = Blueprint('transactions', __name__)
+prefix = 'transactions'
+bp = Blueprint(prefix, __name__, url_prefix=f"/{prefix}")
 
-    @bp.route('/uncategorize')
-    def index():
-        transaction_service = TransactionService()
-        uncategorized_transactions = transaction_service.get_uncategorized_transactions()
-        return render_template('transactions/uncategorize.jinja2', uncategorized_transactions=uncategorized_transactions)
 
-    return bp
+@bp.route('/')
+def index():
+    return render_template('transactions/uncategorize.jinja2')
+
+
+@bp.route('/uncategorize')
+def uncategorize():
+    return render_template('transactions/uncategorize.jinja2')

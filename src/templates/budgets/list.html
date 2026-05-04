@@ -5,15 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budgets - Capital Focus</title>
-    <link rel="icon" href="../static/imgs/icon-light-32x32.png" media="(prefers-color-scheme: light)">
-    <link rel="icon" href="../static/imgs/icon-dark-32x32.png" media="(prefers-color-scheme: dark)">
-    <link rel="icon" href="../static/imgs/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="../static/imgs/apple-icon.png">
+    <link rel="icon" href="{{ url_for('static', filename='imgs/icon-light-32x32.png') }}" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="{{ url_for('static', filename='imgs/icon-dark-32x32.png') }}" media="(prefers-color-scheme: dark)">
+    <link rel="icon" href="{{ url_for('static', filename='imgs/icon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='imgs/apple-icon.png') }}">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../static/styles/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styles.css') }}">
     <style>
         .budget-card {
             transition: transform 0.2s, box-shadow 0.2s;
@@ -49,9 +49,8 @@
         </div>
         <div class="offcanvas-body">
             <ul class="nav flex-column">
-                <li class="nav-item"><a class="nav-link text-dark" href="UncategorizeItems.html">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link active text-primary fw-bold" href="Budgets.html">Budgets</a></li>
-                <li class="nav-item"><a class="nav-link text-dark" href="BudgetDescription.html">Current Budget</a></li>
+                <li class="nav-item"><a class="nav-link text-dark" href="{{ url_for('transactions.index') }}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active text-primary fw-bold" href="{{ url_for('budgets.index') }}">Budgets</a></li>
                 <li class="nav-item"><a class="nav-link text-dark" href="#">Reports</a></li>
                 <li class="nav-item"><a class="nav-link text-dark" href="#">Settings</a></li>
             </ul>
@@ -76,13 +75,13 @@
                     <div class="col-6">
                         <div class="summary-item bg-primary-subtle">
                             <span class="summary-label">Active</span>
-                            <span class="summary-value text-primary">3</span>
+                            <span id="activeCount" class="summary-value text-primary">0</span>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="summary-item bg-secondary-subtle">
                             <span class="summary-label">Inactive</span>
-                            <span class="summary-value text-secondary">1</span>
+                            <span id="inactiveCount" class="summary-value text-secondary">0</span>
                         </div>
                     </div>
                 </div>
@@ -100,90 +99,19 @@
 
         <!-- Budgets Grid (Heuristic 8: Aesthetic and minimalist design) -->
         <h5 class="fw-bold mb-3">Active Budgets</h5>
-        <div class="row g-3 mb-5">
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm budget-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">January 2026</h6>
-                            <span class="badge bg-success-subtle text-success border-0">Active</span>
-                        </div>
-                        <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>Projection: 2.000.000</div>
-                            <div class="mt-1 text-primary fw-bold"><i class="bi bi-info-circle me-2"></i>Current Budget</div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="BudgetDescription.html" class="btn btn-primary btn-sm w-100 rounded-pill shadow-sm">View Details</a>
-                            <button class="btn btn-outline-secondary btn-sm rounded-pill border-0" data-bs-toggle="modal"
-                                data-bs-target="#editBudgetModal" title="Edit Budget">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm budget-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">February 2026</h6>
-                            <span class="badge bg-success-subtle text-success border-0">Active</span>
-                        </div>
-                        <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>Projection: 1.800.000</div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="BudgetDescription.html" class="btn btn-primary btn-sm w-100 rounded-pill shadow-sm">View Details</a>
-                            <button class="btn btn-outline-secondary btn-sm rounded-pill border-0" data-bs-toggle="modal"
-                                data-bs-target="#editBudgetModal" title="Edit Budget">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm budget-card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">March 2026</h6>
-                            <span class="badge bg-success-subtle text-success border-0">Active</span>
-                        </div>
-                        <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>Projection: 2.100.000</div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="BudgetDescription.html" class="btn btn-primary btn-sm w-100 rounded-pill shadow-sm">View Details</a>
-                            <button class="btn btn-outline-secondary btn-sm rounded-pill border-0" data-bs-toggle="modal"
-                                data-bs-target="#editBudgetModal" title="Edit Budget">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
+        <div class="row g-3 mb-5" id="activeBudgetsList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading active budgets...</span>
                 </div>
             </div>
         </div>
 
         <h5 class="fw-bold mb-3 text-muted">Inactive Budgets</h5>
-        <div class="row g-3">
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm budget-card opacity-75">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">December 2025</h6>
-                            <span class="badge bg-secondary-subtle text-secondary border-0">Inactive</span>
-                        </div>
-                        <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>Projection: 1.500.000</div>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="BudgetDescription.html" class="btn btn-primary btn-sm w-100 rounded-pill shadow-sm">View Details</a>
-                            <button class="btn btn-outline-secondary btn-sm rounded-pill border-0" data-bs-toggle="modal"
-                                data-bs-target="#editBudgetModal" title="Edit Budget">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
+        <div class="row g-3" id="inactiveBudgetsList">
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-secondary" role="status">
+                    <span class="visually-hidden">Loading inactive budgets...</span>
                 </div>
             </div>
         </div>
@@ -229,17 +157,17 @@
                     <form id="editBudgetForm">
                         <div class="mb-3">
                             <label for="editBudgetName" class="form-label text-muted small fw-bold">BUDGET TITLE</label>
-                            <input type="text" class="form-control bg-light border-0" id="editBudgetName" value="January 2026" required>
+                            <input type="text" class="form-control bg-light border-0" id="editBudgetName" required>
                         </div>
                         <div class="mb-3">
                             <label for="editInitialSalary" class="form-label text-muted small fw-bold">BUDGET PROJECTION</label>
-                            <input type="number" class="form-control bg-light border-0" id="editInitialSalary" value="2000000" placeholder="0.00" required>
+                            <input type="number" class="form-control bg-light border-0" id="editInitialSalary" placeholder="0.00" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold">STATUS</label>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" role="switch"
-                                    id="statusSwitch" checked>
+                                    id="statusSwitch">
                                 <label class="form-check-label" for="statusSwitch">Active</label>
                             </div>
                         </div>
@@ -255,7 +183,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="../static/scripts/script.js"></script>
+    <script type="module" src="{{ url_for('static', filename='scripts/budgets/list.js') }}"></script>
 </body>
 
 </html>
