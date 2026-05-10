@@ -1,17 +1,17 @@
 # Capital Focus Service
 
-Capital Focus is a financial management platform designed to provide comprehensive visibility into budgets and transactions.
+Capital Focus is a financial management platform that provides visibility into budgets and transactions.
 
 ## Features
 
-- **Budget Management**: Monitor and organize active and inactive budgets efficiently.
-- **Transaction Tracking**: Track financial activity and identify uncategorized transactions.
-- **Teable Integration**: Use Teable as a scalable backend for flexible data management.
-- **Modern User Interface**: A responsive experience built with Bootstrap 5 that emphasizes clean aesthetics and high usability.
+- **Budget Management**: Organize active and inactive budgets.
+- **Transaction Tracking**: Monitor financial activity and identify uncategorized transactions.
+- **Teable Integration**: Use Teable as a backend for data management.
+- **User Interface**: A responsive interface built with Bootstrap 5.
 
 ## Architecture
 
-This application uses a dynamic Client-Side Rendering approach. The frontend consists of Vanilla JavaScript and HTML templates that interact with a robust backend API.
+This application uses dynamic client-side rendering. The frontend uses vanilla JavaScript and HTML templates to interact with a backend API.
 
 ## Project Structure
 
@@ -46,7 +46,7 @@ This application uses a dynamic Client-Side Rendering approach. The frontend con
     ```
 
 2.  **Configure Environment Variables**
-    Copy the `env.example` file to `.env` and provide your Teable credentials.
+    Copy `env.example` to `.env` and enter your Teable credentials.
     ```bash
     cp env.example .env
     ```
@@ -63,22 +63,22 @@ This application uses a dynamic Client-Side Rendering approach. The frontend con
 
 ## Development
 
-Execute the following command to run the application:
+Run the following command to start the application:
 
 ```bash
 python src/app.py
 ```
 
-The application will be available at the host and port specified in the environment configuration.
+The application runs on the host and port defined in the environment configuration.
 
 ### User Interface Design Standards
 
-The user interface follows Jakob Nielsen's 10 Usability Heuristics to ensure a seamless experience:
-- **Visibility of System Status**: Budget overviews provide immediate context.
-- **Consistency and Standards**: A unified design language is applied across all modules.
+The user interface adheres to Jakob Nielsen's ten usability heuristics:
+- **Visibility of System Status**: Budget overviews provide context.
+- **Consistency and Standards**: A unified design is applied across all modules.
 - **User Control and Freedom**: Navigation is intuitive via a persistent sidebar.
-- **Aesthetic and Minimalist Design**: The layout focuses on essential data to reduce cognitive load.
+- **Aesthetic and Minimalist Design**: The layout focuses on essential data.
 
 ## License
 
-This project is licensed under the MIT License. Please refer to the [LICENSE](LICENSE) file for more information.
+This project is licensed under the MIT License. Refer to the [LICENSE](LICENSE) file for more information.
