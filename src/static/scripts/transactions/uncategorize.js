@@ -1,60 +1,64 @@
 /**
  * Transactions Uncategorized Module
  * Handles dynamic fetching and rendering of uncategorized transactions.
- * Follows SOLID, DRY and ES6+ standards.
  */
 
+import { ApiService, Formatter, NotificationService } from '../app.js';
+
 class TransactionManager {
+    #elements = {
+        list: document.getElementById('transactionList'),
+        modal: document.getElementById('transactionModal'),
+        form: document.getElementById('transactionForm'),
+        toggleDetailsBtn: document.getElementById('toggleDetails'),
+        saveButton: document.getElementById('saveButton'),
+        detailsArea: document.getElementById('additionalDetails')
+    };
+
+    #bsModal = null;
+    #transactions = [];
+    #currentId = null;
+
     constructor() {
-        this.transactionList = document.getElementById('transactionList');
-        this.transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
-        this.transactionForm = document.getElementById('transactionForm');
-        this.toggleDetailsBtn = document.getElementById('toggleDetails');
-        this.saveButton = document.getElementById('saveButton');
-        this.additionalDetails = document.getElementById('additionalDetails');
-        
-        this.transactions = [];
+        this.#bsModal = new bootstrap.Modal(this.#elements.modal);
+        this.#setupEventListeners();
         this.init();
     }
 
-    init() {
-        this.setupEventListeners();
-        this.fetchUncategorizedTransactions();
+    #setupEventListeners() {
+        this.#elements.toggleDetailsBtn?.addEventListener('click', () => this.#toggleDetails());
+        this.#elements.saveButton?.addEventListener('click', () => this.#handleSave());
+        
+        // Event delegation for categorize buttons
+        this.#elements.list?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.categorize-btn');
+            if (btn) {
+                const id = btn.getAttribute('data-id');
+                const transaction = this.#transactions.find(t => t.id === id);
+                this.#selectTransaction(transaction);
+            }
+        });
     }
 
-    setupEventListeners() {
-        this.toggleDetailsBtn.addEventListener('click', () => this.toggleAdditionalDetails());
-        this.saveButton.addEventListener('click', () => this.handleSave());
-    }
-
-    toggleAdditionalDetails() {
-        const isHidden = this.additionalDetails.classList.contains('d-none');
-        if (isHidden) {
-            this.additionalDetails.classList.remove('d-none');
-            this.toggleDetailsBtn.textContent = 'Hide Additional Details';
-        } else {
-            this.additionalDetails.classList.add('d-none');
-            this.toggleDetailsBtn.textContent = 'Show More Details';
-        }
-    }
-
-    async fetchUncategorizedTransactions() {
+    async init() {
         try {
-            const response = await fetch('/api/transactions/uncategorize');
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const data = await response.json();
-            this.transactions = data.records || [];
-            this.renderTransactions();
+            const data = await ApiService.fetchJson('/api/transactions/uncategorize');
+            this.#transactions = data.records || [];
+            this.#render();
         } catch (error) {
-            console.error('Error fetching transactions:', error);
-            this.renderError('Failed to load transactions. Please try again later.');
+            this.#renderError('Failed to load transactions.');
         }
     }
 
-    renderTransactions() {
-        if (this.transactions.length === 0) {
-            this.transactionList.innerHTML = `
+    #toggleDetails() {
+        const isHidden = this.#elements.detailsArea.classList.contains('d-none');
+        this.#elements.detailsArea.classList.toggle('d-none');
+        this.#elements.toggleDetailsBtn.textContent = isHidden ? 'Hide Additional Details' : 'Show More Details';
+    }
+
+    #render() {
+        if (this.#transactions.length === 0) {
+            this.#elements.list.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <p class="text-muted">No pending transactions found.</p>
                 </div>
@@ -62,108 +66,95 @@ class TransactionManager {
             return;
         }
 
-        this.transactionList.innerHTML = this.transactions.map(transaction => this.createTransactionCard(transaction)).join('');
-        
-        // Add event listeners to the dynamically created buttons
-        this.transactionList.querySelectorAll('.categorize-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const transactionId = e.target.getAttribute('data-id');
-                const transaction = this.transactions.find(t => t.id === transactionId);
-                this.selectTransaction(transaction);
-            });
-        });
+        this.#elements.list.innerHTML = this.#transactions.map(t => this.#createCardHtml(t)).join('');
     }
 
-    createTransactionCard(transaction) {
+    #createCardHtml(transaction) {
         const { fields, id } = transaction;
         return `
             <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm transaction-card">
+                <div class="card h-100 border-0 shadow-sm transaction-card fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${fields.commerce || 'Unknown'}</h6>
-                            <span class="badge bg-warning-subtle text-warning border-0">Pending</span>
+                            <h6 class="fw-bold mb-0">${Formatter.escapeHtml(fields.commerce || 'Unknown')}</h6>
+                            <span class="badge bg-warning-subtle text-warning border-0 small">Pending</span>
                         </div>
                         <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>${fields.date || 'N/A'}</div>
-                            <div class="fw-bold text-dark mt-1 fs-5">$${fields.amount || '0.00'}</div>
+                            <div><i class="bi bi-calendar3 me-2"></i>${Formatter.formatDate(fields.date)}</div>
+                            <div class="fw-bold text-dark mt-1 fs-5">${Formatter.formatCurrency(fields.amount)}</div>
                         </div>
-                        <button class="btn btn-primary btn-sm w-100 rounded-pill categorize-btn" data-id="${id}">Categorize</button>
+                        <button class="btn btn-primary btn-sm w-100 rounded-pill categorize-btn shadow-sm" data-id="${id}">
+                            Categorize
+                        </button>
                     </div>
                 </div>
             </div>
         `;
     }
 
-    renderError(message) {
-        this.transactionList.innerHTML = `
+    #selectTransaction(transaction) {
+        if (!transaction) return;
+        
+        const { fields } = transaction;
+        this.#currentId = transaction.id;
+        
+        // Fill form
+        const mapping = {
+            'modalCommerce': fields.commerce,
+            'modalDate': fields.date,
+            'modalAmount': fields.amount,
+            'modalLocation': fields.location,
+            'modalCard': fields.card
+        };
+
+        for (const [id, value] of Object.entries(mapping)) {
+            const el = document.getElementById(id);
+            if (el) el.value = value || '';
+        }
+
+        // Reset details view
+        this.#elements.detailsArea.classList.add('d-none');
+        this.#elements.toggleDetailsBtn.textContent = 'Show More Details';
+
+        this.#bsModal.show();
+    }
+
+    async #handleSave() {
+        if (!this.#elements.form.checkValidity()) {
+            this.#elements.form.reportValidity();
+            return;
+        }
+
+        const data = {
+            id: this.#currentId,
+            budget: document.getElementById('budgetSelect').value,
+            category: document.getElementById('categorySelect').value
+        };
+
+        try {
+            await ApiService.fetchJson(`/api/transactions/${this.#currentId}`, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+
+            this.#bsModal.hide();
+            NotificationService.show('Transaction categorized!', 'success');
+            await this.init();
+        } catch (error) {
+            NotificationService.show('Failed to save transaction', 'danger');
+        }
+    }
+
+    #renderError(message) {
+        this.#elements.list.innerHTML = `
             <div class="col-12 text-center py-5">
                 <p class="text-danger">${message}</p>
                 <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="location.reload()">Retry</button>
             </div>
         `;
     }
-
-    selectTransaction(transaction) {
-        if (!transaction) return;
-        
-        const { fields } = transaction;
-        document.getElementById("modalCommerce").value = fields.commerce || '';
-        document.getElementById("modalDate").value = fields.date || '';
-        document.getElementById("modalAmount").value = fields.amount || '';
-        document.getElementById("modalLocation").value = fields.location || '';
-        document.getElementById("modalCard").value = fields.card || '';
-
-        // Reset additional details
-        this.additionalDetails.classList.add('d-none');
-        this.toggleDetailsBtn.textContent = 'Show More Details';
-
-        this.transactionModal.show();
-        this.currentTransactionId = transaction.id;
-    }
-
-    async handleSave() {
-        if (!this.transactionForm.checkValidity()) {
-            this.transactionForm.reportValidity();
-            return;
-        }
-
-        const formData = new FormData(this.transactionForm);
-        const data = {
-            id: this.currentTransactionId,
-            budget: document.getElementById('budgetSelect').value,
-            category: document.getElementById('categorySelect').value
-        };
-
-        // Add other form fields if needed
-        this.transactionForm.querySelectorAll('input.form-control').forEach(el => {
-            if (el.id.startsWith('modal')) {
-                const key = el.id.replace('modal', '').toLowerCase();
-                data[key] = el.value;
-            }
-        });
-
-        try {
-            console.log('Saving categorization...', data);
-            const response = await fetch(`/api/transactions/${this.currentTransactionId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) throw new Error('Failed to save transaction');
-
-            this.transactionModal.hide();
-            // Refresh the list after successful save
-            this.fetchUncategorizedTransactions();
-        } catch (error) {
-            console.error('Save error:', error);
-            alert('Failed to save changes. Please try again.');
-        }
-    }
 }
 
-// Initialize the manager when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    window.transactionManager = new TransactionManager();
+    new TransactionManager();
 });

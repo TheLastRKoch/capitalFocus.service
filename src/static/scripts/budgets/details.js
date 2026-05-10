@@ -3,107 +3,122 @@
  * Handles dynamic fetching and rendering of budget categories and entries.
  */
 
+import { ApiService, Formatter, NotificationService } from '../app.js';
+
 class BudgetDetailsManager {
-    bootstrap(){
-        this.budgetId = this.getBudgetIdFromUrl();
-        this.budgetTitle = document.getElementById('budgetTitle');
-        this.projectionValue = document.getElementById('projectionValue');
-        this.remainingValue = document.getElementById('remainingValue');
-        this.availableValue = document.getElementById('availableValue');
-        this.sectionsAccordion = document.getElementById('categoriesAccordion');
-        this.sectionsLoader = document.getElementById('categoriesLoader');
-        
+    #budgetId = null;
+    #budget = null;
+    #elements = {
+        title: document.getElementById('budgetTitle'),
+        projection: document.getElementById('projectionValue'),
+        remaining: document.getElementById('remainingValue'),
+        available: document.getElementById('availableValue'),
+        accordion: document.getElementById('categoriesAccordion'),
+        loader: document.getElementById('categoriesLoader'),
+        refreshBtn: document.getElementById('refreshSections')
+    };
+
+    constructor() {
+        this.#budgetId = this.#getBudgetIdFromUrl();
+        this.#setupEventListeners();
         this.init();
     }
-    
-    constructor() {
-        this.bootstrap()
+
+    #setupEventListeners() {
+        this.#elements.refreshBtn?.addEventListener('click', () => this.init());
     }
 
-    init() {
-        if (this.budgetId) {
-            this.fetchBudgetDetails();
-        } else {
-            this.budgetTitle.textContent = "Current Budget";
-            // Logic for "Current Budget" could fetch the active one
-            this.fetchActiveBudget();
-        }
-    }
-
-    getBudgetIdFromUrl() {
+    #getBudgetIdFromUrl() {
         const path = window.location.pathname;
         const parts = path.split('/');
-        return parts[parts.length - 1] !== 'budgets' ? parts[parts.length - 1] : null;
+        // Expected format /budgets/ID
+        return parts.at(-1) !== 'budgets' ? parts.at(-1) : null;
     }
 
-    async fetchActiveBudget() {
+    async init() {
+        this.#showLoader();
         try {
-            const response = await fetch('/api/budgets/active');
-            const budgets = await response.json();
-            if (budgets && budgets.length > 0) {
-                this.budgetId = budgets[0].id;
-                this.fetchBudgetDetails();
+            if (!this.#budgetId) {
+                await this.#fetchActiveBudget();
+            }
+            
+            if (this.#budgetId) {
+                await this.#fetchBudgetDetails();
             } else {
-                this.budgetTitle.textContent = "No Active Budget";
-                this.sectionsLoader.innerHTML = '<p class="text-muted">Please create a budget first.</p>';
+                this.#renderEmptyState('Please create a budget first.');
             }
         } catch (error) {
-            console.error('Error fetching active budget:', error);
+            this.#renderError('Failed to load budget details.');
+        } finally {
+            this.#hideLoader();
         }
     }
 
-    async fetchBudgetDetails() {
-        try {
-            const [budgetRes] = await Promise.all([
-                fetch(`/api/budgets/${this.budgetId}`)
-            ]);
-
-            if (!budgetRes.ok ) throw new Error('Failed to fetch budget details');
-
-            this.budget = await budgetRes.json();
-
-            this.renderBudgets(this.budget);
-            this.renderSections(this.budget.fields.sections);
-            const sectionProjection = calculateSectionProjection()
-            this.remainingValue.textContent = this.budget.fields.projection - sectionProjection
-
-        } catch (error) {
-            console.error('Error fetching budget details:', error);
-            this.renderError('Failed to load budget details.');
+    async #fetchActiveBudget() {
+        const budgets = await ApiService.fetchJson('/api/budgets/active');
+        if (budgets?.length > 0) {
+            this.#budgetId = budgets[0].id;
         }
     }
 
-    renderBudgets(budget) {
-        this.budgetTitle.textContent = budget.fields.name || 'Budget Details';
-        this.projectionValue.textContent = budget.fields.projection || '0';
-        this.remainingValue.textContent = '0';
+    async #fetchBudgetDetails() {
+        this.#budget = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}`);
+        this.#render();
     }
 
-    renderSections(sections) {
-        this.sectionsLoader.classList.add('d-none');
+    #showLoader() {
+        this.#elements.loader?.classList.remove('d-none');
+        if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+    }
+
+    #hideLoader() {
+        this.#elements.loader?.classList.add('d-none');
+    }
+
+    #render() {
+        const { fields } = this.#budget;
+        if (this.#elements.title) this.#elements.title.textContent = fields.name || 'Budget Details';
+        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(fields.projection || 0);
         
+        const sections = fields.sections || [];
         if (sections.length === 0) {
-            this.sectionsAccordion.innerHTML = '<div class="text-center py-4 text-muted">No sections found for this budget.</div>';
+            this.#renderEmptyState('No sections found for this budget.');
             return;
         }
 
-        this.sectionsAccordion.innerHTML = sections.map((sec, index) => this.createSectionAccordionItem(sec, index)).join('');
+        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
+        if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
+        
+        this.#updateOverview();
     }
 
-    createSectionAccordionItem(section, index) {
-        const remaining = calculateRemaining(section)
+    #updateOverview() {
+        const totalSectionProjection = (this.#budget.fields.sections || []).reduce((acc, sec) => acc + (sec.fields.projection || 0), 0);
+        if (this.#elements.remaining) {
+            const available = (this.#budget.fields.projection || 0) - totalSectionProjection;
+            this.#elements.remaining.textContent = Formatter.formatCurrency(available);
+        }
+    }
+
+    #createSectionHtml(section, index) {
+        const { fields } = section;
+        const transactions = fields.transactions || [];
+        const totalSpent = transactions.reduce((acc, t) => acc + (t.fields.amount || 0), 0);
+        const remaining = (fields.projection || 0) - totalSpent;
         const collapseId = `categoryCollapse${index}`;
         
-        const acordionItems = `
+        return `
             <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
                             data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
-                            <span class="fw-medium">${section.fields.label}</span>
-                            <span class="text-muted ms-3 projection">${section.fields.projection || 0}</span>
-                            <span class="text-muted ms-3 remaining">${remaining || 0}</span>
+                            <span class="fw-medium">${fields.label}</span>
+                            <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(fields.projection)}</span>
+                            <span class="ms-3 small fw-bold ${remaining < 0 ? 'text-danger' : 'text-success'}">
+                                Rem: ${Formatter.formatCurrency(remaining)}
+                            </span>
                         </button>
                         <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 border-0">
                             <i class="bi bi-pencil me-1"></i> Edit
@@ -122,12 +137,12 @@ class BudgetDetailsManager {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${section.fields.transactions.length > 0 
-                                        ? section.fields.transactions.map(transaction => `
-                                            <tr>
-                                                <td class="text-muted border-end py-3">${transaction.fields.date}</td>
-                                                <td class="text-dark fw-bold border-end py-3">${transaction.fields.amount}</td>
-                                                <td class="text-muted py-3">${transaction.fields.commerce}</td>
+                                    ${transactions.length > 0 
+                                        ? transactions.map(t => `
+                                            <tr class="align-middle">
+                                                <td class="text-muted border-end py-3">${Formatter.formatDate(t.fields.date)}</td>
+                                                <td class="text-dark fw-bold border-end py-3">${Formatter.formatCurrency(t.fields.amount)}</td>
+                                                <td class="text-muted py-3">${Formatter.escapeHtml(t.fields.commerce)}</td>
                                             </tr>
                                         `).join('')
                                         : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'
@@ -139,45 +154,22 @@ class BudgetDetailsManager {
                 </div>
             </div>
         `;
-        return acordionItems
+    }
+
+    #renderEmptyState(message) {
+        if (this.#elements.accordion) {
+            this.#elements.accordion.innerHTML = `<div class="text-center py-4 text-muted">${message}</div>`;
+        }
+    }
+
+    #renderError(message) {
+        if (this.#elements.accordion) {
+            this.#elements.accordion.innerHTML = `<div class="text-center py-4 text-danger">${message}</div>`;
+        }
     }
 }
 
-function calculateRemaining(section) {
-    let totalSection = 0.0;
-
-    const transactions = section.fields.transactions || [];
-    for (const transaction of transactions) {
-        totalSection += parseFloat(transaction.fields.amount || 0);
-    }
-
-    return parseFloat(section?.fields?.projection || 0) - totalSection;
-}
-
-function calculateSectionProjection(){
-    let sectionsProjection = 0 
-
-    const spans = document.querySelectorAll('span.projection');
-    for (const span of spans){
-        sectionsProjection = sectionsProjection + parseFloat(span.innerText)
-    }
-    return sectionsProjection
-}
-
-const budgetDetailsManaget = new BudgetDetailsManager();
-
+// Initialize manager on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-    budgetDetailsManaget.bootstrap()
-
-    // Select the button by its ID
-    const refreshButton = document.getElementById('refreshSections');
-
-    // Check if the button exists to avoid errors
-    if (refreshButton) {
-        refreshButton.addEventListener('click', function(event) {
-            console.log('Refresh Sections button clicked!');
-            budgetDetailsManaget.bootstrap()
-        });
-    }
+    new BudgetDetailsManager();
 });
-
