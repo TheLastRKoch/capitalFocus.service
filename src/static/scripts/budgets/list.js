@@ -10,7 +10,8 @@ class BudgetManager {
         activeList: document.getElementById('activeBudgetsList'),
         inactiveList: document.getElementById('inactiveBudgetsList'),
         activeCount: document.getElementById('activeCount'),
-        inactiveCount: document.getElementById('inactiveCount')
+        inactiveCount: document.getElementById('inactiveCount'),
+        searchInput: document.getElementById('searchInput')
     };
 
     #state = {
@@ -27,6 +28,7 @@ class BudgetManager {
             await this.#fetchBudgets();
             this.#render();
             this.#updateSummary();
+            this.#setupEventListeners();
         } catch (error) {
             this.#renderError('Failed to load budgets.');
         }
@@ -42,22 +44,38 @@ class BudgetManager {
         this.#state.inactiveBudgets = inactive || [];
     }
 
+    #setupEventListeners() {
+        if (this.#elements.searchInput) {
+            this.#elements.searchInput.addEventListener('input', (e) => {
+                this.#render(e.target.value.toLowerCase());
+            });
+        }
+    }
+
     #updateSummary() {
         if (this.#elements.activeCount) this.#elements.activeCount.textContent = this.#state.activeBudgets.length;
         if (this.#elements.inactiveCount) this.#elements.inactiveCount.textContent = this.#state.inactiveBudgets.length;
     }
 
-    #render() {
+    #render(filter = '') {
+        const filterFn = b => {
+            const name = (b.fields.name || '').toLowerCase();
+            return name.includes(filter);
+        };
+
+        const activeToRender = this.#state.activeBudgets.filter(filterFn);
+        const inactiveToRender = this.#state.inactiveBudgets.filter(filterFn);
+
         if (this.#elements.activeList) {
-            this.#elements.activeList.innerHTML = this.#state.activeBudgets.length > 0 
-                ? this.#state.activeBudgets.map(b => this.#createBudgetCard(b, true)).join('')
-                : '<div class="col-12 text-center py-4 text-muted">No active budgets.</div>';
+            this.#elements.activeList.innerHTML = activeToRender.length > 0 
+                ? activeToRender.map(b => this.#createBudgetCard(b, true)).join('')
+                : `<div class="col-12 text-center py-4 text-muted">${filter ? 'No budgets match your search.' : 'No active budgets.'}</div>`;
         }
 
         if (this.#elements.inactiveList) {
-            this.#elements.inactiveList.innerHTML = this.#state.inactiveBudgets.length > 0 
-                ? this.#state.inactiveBudgets.map(b => this.#createBudgetCard(b, false)).join('')
-                : '<div class="col-12 text-center py-4 text-muted">No inactive budgets.</div>';
+            this.#elements.inactiveList.innerHTML = inactiveToRender.length > 0 
+                ? inactiveToRender.map(b => this.#createBudgetCard(b, false)).join('')
+                : `<div class="col-12 text-center py-4 text-muted">${filter ? 'No budgets match your search.' : 'No inactive budgets.'}</div>`;
         }
     }
 
