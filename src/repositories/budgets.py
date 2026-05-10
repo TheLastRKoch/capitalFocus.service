@@ -14,12 +14,12 @@ class BudgetsRepository:
         self.sections_repo = SectionsRepository()
         self.transactions_repo = TransactionsRepository()
 
-    def all(self) -> dict:
+    def all(self) -> list:
         """
         Retrieve a list of budgets from the Teable service.
 
         Returns:
-            dict: The JSON response containing the list of budgets.
+            list: A list of budget records.
         """
         return self.teable.read(TEABLE_BUDGETS)
 
@@ -28,7 +28,7 @@ class BudgetsRepository:
         Retrieve budgets filtered by status.
 
         Args:
-            target_status (str): The status to filter by (e.g., 'active', 'inactive').
+            target_status (str): The status to filter by (e.g., 'Active', 'Inactive').
 
         Returns:
             list: A list of budgets matching the given status.
