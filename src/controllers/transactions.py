@@ -23,4 +23,4 @@ def uncategorize() -> str:
     Returns:
         str: The rendered HTML for the transactions uncategorize page.
     """
-    return render_template('transactions/uncategorize.jinja2')
+    return render_template('transactions/uncategorize.html')
