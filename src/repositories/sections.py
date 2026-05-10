@@ -17,10 +17,14 @@ class SectionsRepository:
             dict: The JSON response containing the list of transactions.
         """
         return self.teable.read(TEABLE_SECTIONS)
-    
+
     def filter_by_budget(self, budget_id: str) -> list:
         sections = self.all()
         return [
-            section for section in sections 
-            if section.get('fields', {}).get('budgets',{}).get('id') == budget_id
+            section for section in sections if section.get('fields', {}).get(
+                'budgets', {}).get('id') == budget_id
         ]
+
+    def get_by_id(self, id):
+        sections = self.all()
+        return [section for section in sections if section.get('id') == id][0]

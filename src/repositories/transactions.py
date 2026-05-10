@@ -22,7 +22,13 @@ class TransactionsRepository:
         transactions = self.all()
         uncategorized_transactions = []
         for transaction in transactions:
-            status = transaction.get('fields',{}).get('status')
+            status = transaction.get('fields', {}).get('status')
             if status == 'Uncategorized':
                 uncategorized_transactions.append(transaction)
         return uncategorized_transactions
+
+    def get_by_id(self, id):
+        return [
+            transaction for transaction in self.all()
+            if transaction.get('id') == id
+        ][0]
