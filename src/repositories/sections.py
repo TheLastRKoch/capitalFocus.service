@@ -17,7 +17,7 @@ class SectionsRepository:
             list: A list of section records.
         """
         return self.teable.read(TEABLE_SECTIONS)
-    
+
     def filter_by_budget(self, budget_id: str) -> list:
         """
         Filter sections by a specific budget ID.
@@ -30,6 +30,10 @@ class SectionsRepository:
         """
         sections = self.all()
         return [
-            section for section in sections 
-            if section.get('fields', {}).get('budgets',{}).get('id') == budget_id
+            section for section in sections if section.get('fields', {}).get(
+                'budgets', {}).get('id') == budget_id
         ]
+
+    def get_by_id(self, id):
+        sections = self.all()
+        return [section for section in sections if section.get('id') == id][0]

@@ -1,6 +1,9 @@
 from environment import TEABLE_BUDGETS
 from services.teable import TeableService
 
+from repositories.sections import SectionsRepository
+from repositories.transactions import TransactionsRepository
+
 
 class BudgetsRepository:
     """Repository for managing budget records via Teable."""
@@ -8,6 +11,8 @@ class BudgetsRepository:
     def __init__(self) -> None:
         """Initialize the budgets repository with a Teable service instance."""
         self.teable = TeableService()
+        self.sections_repo = SectionsRepository()
+        self.transactions_repo = TransactionsRepository()
 
     def all(self) -> list:
         """
@@ -30,23 +35,33 @@ class BudgetsRepository:
         """
         budgets = self.all()
         return [
-            budget for budget in budgets 
+            budget for budget in budgets
             if budget.get('fields', {}).get('status') == target_status
         ]
 
-    def get_by_id(self, budget_id: str) -> list:
-        """
-        Retrieve a budget by its unique identifier.
+    def get_by_id(self, id):
 
-        Args:
-            budget_id (str): The unique identifier of the budget.
+        budgets = [budget for budget in self.all()
+                   if budget.get('id') == id][0]
 
-        Returns:
-            list: A list containing the budget(s) matching the ID.
-        """
-        budgets = self.all()
-        return [
-            budget for budget in budgets 
-            if budget.get('id') == budget_id
-        ] 
- 
+        sections_complete = []
+        sections = budgets.get('fields', {}).get('sections', {})
+        for section in sections:
+            section_complete = self.sections_repo.get_by_id(section.get('id'))
+            if section_complete:
+                transactions_complete = []
+                transactions = section_complete.get('fields', {}).get(
+                    'transactions', {})
+                for transaction in transactions:
+                    complete_transaction = self.transactions_repo.get_by_id(
+                        transaction.get('id'))
+                    if complete_transaction:
+                        transactions_complete.append(complete_transaction)
+
+                sections_complete.append(section_complete)
+
+            section_complete['fields']['transactions'] = transactions_complete
+
+        budgets['fields']['sections'] = sections_complete
+
+        return budgets
