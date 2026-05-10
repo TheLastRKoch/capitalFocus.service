@@ -5,8 +5,8 @@ from services.budgets import BudgetService
 from services.teable import TeableService
 from environment import Config
 
-prefix = "api/budgets"
-bp = Blueprint(prefix, __name__, url_prefix=f"/{prefix}")
+prefix = 'api/budgets'
+bp = Blueprint(prefix, __name__, url_prefix=f'/{prefix}')
 
 # Dependency Setup
 teable_service = TeableService(Config.TEABLE_API_TOKEN, Config.TEABLE_URL)

@@ -26,7 +26,7 @@ class TeableService:
         Returns:
             list: A list of records from the table.
         """
-        url = f"{self.base_url}/api/table/{table_id}/record"
+        url = f'{self.base_url}/api/table/{table_id}/record'
 
         response = requests.get(
             url,
@@ -34,4 +34,4 @@ class TeableService:
         )
 
         response.raise_for_status()
-        return response.json().get("records", [])
+        return response.json().get('records', [])

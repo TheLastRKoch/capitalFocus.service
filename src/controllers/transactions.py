@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template
 
 prefix = 'transactions'
-bp = Blueprint(prefix, __name__, url_prefix=f"/{prefix}")
+bp = Blueprint(prefix, __name__, url_prefix=f'/{prefix}')
 
 
 @bp.route('/')
