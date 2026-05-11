@@ -4,7 +4,7 @@ from controllers.transactions import bp as transactions
 from api.budgets import bp as budgets_api
 from api.transactions import bp as transactions_api
 
-from flask import Flask
+from flask import Flask, redirect, url_for
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -20,6 +20,10 @@ def create_app(config_class=Config):
     # API blueprints
     app.register_blueprint(budgets_api)
     app.register_blueprint(transactions_api)
+
+    @app.route('/')
+    def root():
+        return redirect(url_for('budgets.index'))
     
     return app
 
