@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capitalfocus-service
+  labels:
+    app: capitalfocus
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: capitalfocus
+  template:
+    metadata:
+      labels:
+        app: capitalfocus
+    spec:
+      containers:
+      - name: capitalfocus
+        image: capitalfocus-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        env:
+        - name: TEABLE_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: capitalfocus-config
+              key: TEABLE_BASE_URL
+        - name: TEABLE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: capitalfocus-secrets
+              key: TEABLE_API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: capitalfocus-service
+spec:
+  selector:
+    app: capitalfocus
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
