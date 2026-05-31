@@ -1,5 +1,6 @@
 import requests
 
+
 class TeableService:
     """Service for interacting with the Teable API."""
 
@@ -49,12 +50,16 @@ class TeableService:
         """
         url = f'{self.base_url}/api/table/{table_id}/record'
 
-        response = requests.post(
-            url,
-            headers=self.__get_headers(),
-            json={'records': [{'fields': fields}]}
-        )
+        response = requests.post(url,
+                                 headers=self.__get_headers(),
+                                 json={
+                                     "fieldKeyType": "name",
+                                     "records": [{
+                                         "fields": fields
+                                     }]
+                                 })
 
+        breakpoint()
         response.raise_for_status()
         records = response.json().get('records', [])
         return records[0] if records else {}

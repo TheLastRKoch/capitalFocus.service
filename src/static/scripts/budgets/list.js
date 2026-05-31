@@ -68,7 +68,7 @@ class BudgetManager {
         if (!nameInput || !projectionInput) return;
 
         const payload = {
-            name: nameInput.value,
+            Label: nameInput.value,
             projection: parseFloat(projectionInput.value)
         };
 

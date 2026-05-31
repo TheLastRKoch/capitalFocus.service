@@ -1,5 +1,6 @@
 from repositories.base import BaseRepository
 
+
 class BudgetsRepository(BaseRepository):
     """Repository for managing budget records via Teable."""
 
