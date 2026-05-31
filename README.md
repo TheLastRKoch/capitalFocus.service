@@ -17,17 +17,15 @@ This application uses dynamic client-side rendering. The frontend uses vanilla J
 
 ```
 .
-├── src/
-│   ├── api/                # API endpoint definitions
-│   ├── controllers/        # Route handlers for web views
-│   ├── repositories/       # Data access layer for Teable records
-│   ├── services/           # External service integrations
-│   ├── static/             # Static assets including CSS, JavaScript, and images
-│   ├── templates/          # HTML templates for the frontend
-│   ├── app.py              # Main application entry point
-│   └── environment.py      # Environment configuration and variable management
-├── env.example             # Template for environment variables
-└── README.md               # Project documentation
+├── budgets/            # Budget app (views, urls)
+├── transactions/       # Transactions app (views, urls)
+├── core/               # Shared logic (repositories, services)
+├── capital_focus/      # Main Django project configuration
+├── static_files/       # Static assets including CSS, JavaScript, and images
+├── templates/          # HTML templates for the frontend
+├── manage.py           # Django management script
+├── env.example         # Template for environment variables
+└── README.md           # Project documentation
 ```
 
 ## Setup and Installation
@@ -50,15 +48,10 @@ This application uses dynamic client-side rendering. The frontend uses vanilla J
     ```bash
     cp env.example .env
     ```
-    Update the `.env` file with the following values:
-    ```
-    TEABLE_BASE_URL=https://app.teable.ai/api
-    TEABLE_API_KEY=your_api_key_here
-    ```
 
 3.  **Install Dependencies**
     ```bash
-    pip install flask requests python-dotenv
+    pip install -r requirements.txt
     ```
 
 ## Development
@@ -66,10 +59,8 @@ This application uses dynamic client-side rendering. The frontend uses vanilla J
 Run the following command to start the application:
 
 ```bash
-python src/app.py
+python manage.py runserver
 ```
-
-The application runs on the host and port defined in the environment configuration.
 
 ### User Interface Design Standards
 
