@@ -15,7 +15,9 @@ class BudgetDetailsManager {
         available: document.getElementById('availableValue'),
         accordion: document.getElementById('categoriesAccordion'),
         loader: document.getElementById('categoriesLoader'),
-        refreshBtn: document.getElementById('refreshSections')
+        refreshBtn: document.getElementById('refreshSections'),
+        addForm: document.getElementById('addCategoryForm'),
+        addModal: document.getElementById('addCategoryModal')
     };
 
     constructor() {
@@ -26,6 +28,44 @@ class BudgetDetailsManager {
 
     #setupEventListeners() {
         this.#elements.refreshBtn?.addEventListener('click', () => this.init());
+
+        if (this.#elements.addForm) {
+            this.#elements.addForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.#handleCreateSection();
+            });
+        }
+    }
+
+    async #handleCreateSection() {
+        const labelInput = document.getElementById('newCategoryName');
+        const projectionInput = document.getElementById('newCategoryBudget');
+
+        if (!labelInput || !projectionInput || !this.#budgetId) return;
+
+        const payload = {
+            label: labelInput.value,
+            projection: parseFloat(projectionInput.value)
+        };
+
+        try {
+            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections`, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            NotificationService.show('Section created successfully!', 'success');
+
+            // Reset form and close modal
+            this.#elements.addForm.reset();
+            const modalInstance = bootstrap.Modal.getInstance(this.#elements.addModal);
+            if (modalInstance) modalInstance.hide();
+
+            // Refresh data
+            await this.init();
+        } catch (error) {
+            NotificationService.show('Failed to create section.', 'danger');
+        }
     }
 
     #getBudgetIdFromUrl() {

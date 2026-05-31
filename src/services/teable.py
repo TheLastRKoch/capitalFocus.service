@@ -49,17 +49,12 @@ class TeableService:
             dict: The created record.
         """
         url = f'{self.base_url}/api/table/{table_id}/record'
-
+        payload = {"fieldKeyType": "name", "records": [{"fields": fields}]}
         response = requests.post(url,
                                  headers=self.__get_headers(),
-                                 json={
-                                     "fieldKeyType": "name",
-                                     "records": [{
-                                         "fields": fields
-                                     }]
-                                 })
-
-        breakpoint()
+                                 json=payload)
+        if response.status_code != 200:
+            print(response.text)
         response.raise_for_status()
         records = response.json().get('records', [])
         return records[0] if records else {}

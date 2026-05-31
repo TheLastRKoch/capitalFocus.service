@@ -1,5 +1,6 @@
 from repositories.base import BaseRepository
 
+
 class SectionsRepository(BaseRepository):
     """Repository for managing section records via Teable."""
 

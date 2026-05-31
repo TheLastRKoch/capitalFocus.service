@@ -69,3 +69,19 @@ class BudgetService:
             budget_data['status'] = 'Active'
 
         return self.budgets_repo.create(budget_data)
+
+    def create_section(self, budget_id: str, section_data: dict) -> dict:
+        """
+        Create a new section record linked to a budget.
+
+        Args:
+            budget_id (str): The ID of the budget to link the section to.
+            section_data (dict): The data for the new section.
+
+        Returns:
+            dict: The created section record.
+        """
+        # Link to the budget. Teable link fields usually expect a list of IDs or objects.
+        # In Teable, link fields are typically lists of IDs.
+        section_data['budgets'] = {id: budget_id}
+        return self.sections_repo.create(section_data)

@@ -46,3 +46,9 @@ def get_by_id(id: str) -> tuple[Response, int]:
 def create() -> tuple[Response, int]:
     data = request.json
     return jsonify(budget_service.create_budget(data)), 201
+
+
+@bp.route('/<string:id>/sections', methods=['POST'])
+def create_section(id: str) -> tuple[Response, int]:
+    data = request.json
+    return jsonify(budget_service.create_section(id, data)), 201
