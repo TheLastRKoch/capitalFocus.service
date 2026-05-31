@@ -3,7 +3,7 @@
  * Handles dynamic fetching and rendering of budgets.
  */
 
-import { ApiService, Formatter } from '../app.js';
+import { ApiService, Formatter, NotificationService } from '../app.js';
 
 class BudgetManager {
     #elements = {
@@ -11,7 +11,9 @@ class BudgetManager {
         inactiveList: document.getElementById('inactiveBudgetsList'),
         activeCount: document.getElementById('activeCount'),
         inactiveCount: document.getElementById('inactiveCount'),
-        searchInput: document.getElementById('searchInput')
+        searchInput: document.getElementById('searchInput'),
+        addForm: document.getElementById('addBudgetForm'),
+        addModal: document.getElementById('addBudgetModal')
     };
 
     #state = {
@@ -49,6 +51,44 @@ class BudgetManager {
             this.#elements.searchInput.addEventListener('input', (e) => {
                 this.#render(e.target.value.toLowerCase());
             });
+        }
+
+        if (this.#elements.addForm) {
+            this.#elements.addForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.#handleCreateBudget();
+            });
+        }
+    }
+
+    async #handleCreateBudget() {
+        const nameInput = document.getElementById('budgetName');
+        const projectionInput = document.getElementById('initialSalary');
+
+        if (!nameInput || !projectionInput) return;
+
+        const payload = {
+            Label: nameInput.value,
+            projection: parseFloat(projectionInput.value)
+        };
+
+        try {
+            await ApiService.fetchJson('/api/budgets/', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            NotificationService.show('Budget created successfully!', 'success');
+            
+            // Reset form and close modal
+            this.#elements.addForm.reset();
+            const modalInstance = bootstrap.Modal.getInstance(this.#elements.addModal);
+            if (modalInstance) modalInstance.hide();
+
+            // Refresh data
+            await this.init();
+        } catch (error) {
+            NotificationService.show('Failed to create budget.', 'danger');
         }
     }
 
@@ -92,7 +132,7 @@ class BudgetManager {
                 <div class="card h-100 border-0 shadow-sm budget-card ${opacityClass} fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${fields.name || 'Unnamed Budget'}</h6>
+                            <h6 class="fw-bold mb-0">${fields.Label || 'Unnamed Budget'}</h6>
                             ${statusBadge}
                         </div>
                         <div class="text-muted small mb-3">

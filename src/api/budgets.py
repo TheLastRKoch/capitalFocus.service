@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, Response
+from flask import Blueprint, jsonify, Response, request
 from repositories.budgets import BudgetsRepository
 from repositories.sections import SectionsRepository
 from services.budgets import BudgetService
@@ -40,3 +40,9 @@ def inactive() -> tuple[Response, int]:
 @bp.route('/<string:id>', methods=['GET'])
 def get_by_id(id: str) -> tuple[Response, int]:
     return jsonify(budget_service.get_budget_details(id)), 200
+
+
+@bp.route('/', methods=['POST'])
+def create() -> tuple[Response, int]:
+    data = request.json
+    return jsonify(budget_service.create_budget(data)), 201
