@@ -35,3 +35,26 @@ class TeableService:
 
         response.raise_for_status()
         return response.json().get('records', [])
+
+    def create(self, table_id: str, fields: dict) -> dict:
+        """
+        Create a new record in a specific table.
+
+        Args:
+            table_id (str): The unique identifier of the table.
+            fields (dict): A dictionary of field values for the new record.
+
+        Returns:
+            dict: The created record.
+        """
+        url = f'{self.base_url}/api/table/{table_id}/record'
+
+        response = requests.post(
+            url,
+            headers=self.__get_headers(),
+            json={'records': [{'fields': fields}]}
+        )
+
+        response.raise_for_status()
+        records = response.json().get('records', [])
+        return records[0] if records else {}

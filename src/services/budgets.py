@@ -55,3 +55,18 @@ class BudgetService:
         budget_copy['fields']['sections'] = sections_complete
         
         return budget_copy
+
+    def create_budget(self, budget_data: dict) -> dict:
+        """
+        Create a new budget record.
+
+        Args:
+            budget_data (dict): The data for the new budget.
+
+        Returns:
+            dict: The created budget record.
+        """
+        if 'status' not in budget_data:
+            budget_data['status'] = 'Active'
+        
+        return self.budgets_repo.create(budget_data)

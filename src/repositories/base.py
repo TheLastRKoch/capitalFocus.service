@@ -26,3 +26,15 @@ class BaseRepository(ABC):
             record for record in self.all()
             if record.get('fields', {}).get(field_name) == value
         ]
+
+    def create(self, fields: dict) -> dict:
+        """
+        Create a new record in the table.
+
+        Args:
+            fields (dict): The field values for the new record.
+
+        Returns:
+            dict: The created record.
+        """
+        return self.teable.create(self.table_id, fields)
