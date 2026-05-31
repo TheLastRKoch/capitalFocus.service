@@ -6,14 +6,16 @@
 {% block content %}
 <!-- Page Header -->
 <div class="d-flex align-items-center mb-5 fade-in">
-    <a href="{{ url_for('budgets.index') }}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+    <a href="{{ url_for('budgets.index') }}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
+        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
         <i class="bi bi-arrow-left fs-5"></i>
     </a>
     <div>
         <h2 class="fw-bold mb-0" id="budgetTitle">Loading...</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ url_for('budgets.index') }}" class="text-decoration-none text-muted">Budgets</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('budgets.index') }}"
+                        class="text-decoration-none text-muted">Budgets</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Details</li>
             </ol>
         </nav>
@@ -32,7 +34,8 @@
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="summary-label">Total Projection</span>
-                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal" data-bs-target="#editSummary">
+                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal"
+                        data-bs-target="#editSummary">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
                 </div>
@@ -61,7 +64,8 @@
 </div>
 
 <!-- FAB -->
-<button class="btn btn-primary rounded-circle fab-button shadow-lg" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+<button class="btn btn-primary rounded-circle fab-button shadow-lg" data-bs-toggle="modal"
+    data-bs-target="#addCategoryModal">
     <i class="bi bi-plus-lg"></i>
 </button>
 {% endblock %}
@@ -83,13 +87,15 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">BUDGET</label>
-                        <input type="number" class="form-control bg-light border-0" id="editCategoryBudget" placeholder="0.00" required>
+                        <input type="number" class="form-control bg-light border-0" id="editCategoryBudget"
+                            placeholder="0.00" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="editCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveEditCategoryBtn">Save Changes</button>
+                <button type="submit" form="editCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm"
+                    id="saveEditCategoryBtn">Save Changes</button>
             </div>
         </div>
     </div>
@@ -106,18 +112,30 @@
             <div class="modal-body p-4">
                 <form id="addSectionForm">
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">SECTION NAME</label>
-                        <input type="text" class="form-control bg-light border-0" id="newSectionName" required>
+                        <label class="form-label text-muted small fw-bold">NAME</label>
+                        <input type="text" class="form-control bg-light border-0" id="newCategoryName" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">PROJECTION</label>
-                        <input type="number" class="form-control bg-light border-0" id="newSectionProjection" placeholder="0.00" required>
+                        <input type="number" class="form-control bg-light border-0" id="newCategoryBudget"
+                            placeholder="0.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleDataList" class="form-label">Category</label>
+                        <input class="form-control" list="datalistOptions" id="exampleDataList"
+                            placeholder="Type to search...">
+                        <datalist id="datalistOptions">
+                            <option value="Home">
+                            <option value="Luxuries">
+                            <option value="Girl">
+                        </datalist>
                     </div>
                 </form>
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="addSectionForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveNewSectionBtn">Save Section</button>
+                <button type="submit" form="addCategoryForm" class="btn btn-primary rounded-pill px-4 shadow-sm"
+                    id="saveNewCategoryBtn">Save</button>
             </div>
         </div>
     </div>
@@ -141,7 +159,8 @@
             </div>
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="submit" form="editSummaryForm" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveSummaryBtn">Save Changes</button>
+                <button type="submit" form="editSummaryForm" class="btn btn-primary rounded-pill px-4 shadow-sm"
+                    id="saveSummaryBtn">Save Changes</button>
             </div>
         </div>
     </div>
