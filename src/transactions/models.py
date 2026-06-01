@@ -1,5 +1,5 @@
 from django.db import models
-from budgets.models import Budgets
+from budgets.models import BudgetsModel
 from categories.models import SubcategoriesModel
 
 
@@ -29,7 +29,7 @@ class TransactionsModel(models.Model):
                               default='Uncategorized')
     json = models.TextField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
-    budgets = models.ForeignKey(Budgets,
+    budgets = models.ForeignKey(BudgetsModel,
                                 on_delete=models.CASCADE,
                                 related_name='transactions',
                                 null=True,
