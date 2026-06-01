@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Budget Details - Capital Focus{% endblock %}
 
@@ -165,6 +166,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_js %}
 <script type="module" src="{% static 'scripts/budgets/details.js' %}"></script>
