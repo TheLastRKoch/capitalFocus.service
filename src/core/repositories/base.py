@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from core.services.teable import TeableService
 
+
 class BaseRepository(ABC):
     """Abstract base repository for Teable entities."""
 
@@ -18,7 +19,8 @@ class BaseRepository(ABC):
         for record in records:
             if record.get('id') == entity_id:
                 return record
-        raise ValueError(f'Record with id {entity_id} not found in {self.table_id}')
+        raise ValueError(
+            f'Record with id {entity_id} not found in {self.table_id}')
 
     def filter_by_field(self, field_name: str, value: any) -> list:
         """Filter records by a specific field value."""
