@@ -42,7 +42,7 @@ class TransactionManager {
 
     async init() {
         try {
-            const data = await ApiService.fetchJson('/api/transactions/uncategorize');
+            const data = await ApiService.fetchJson('/api/transactions/uncategorize/');
             this.#transactions = data.records || [];
             this.#render();
         } catch (error) {
@@ -132,7 +132,7 @@ class TransactionManager {
         };
 
         try {
-            await ApiService.fetchJson(`/api/transactions/${this.#currentId}`, {
+            await ApiService.fetchJson(`/api/transactions/${this.#currentId}/`, {
                 method: 'PUT',
                 body: JSON.stringify(data)
             });

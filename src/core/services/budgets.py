@@ -1,6 +1,6 @@
-from repositories.budgets import BudgetsRepository
-from repositories.sections import SectionsRepository
-from repositories.transactions import TransactionsRepository
+from core.repositories.budgets import BudgetsRepository
+from core.repositories.sections import SectionsRepository
+from core.repositories.transactions import TransactionsRepository
 
 
 class BudgetService:

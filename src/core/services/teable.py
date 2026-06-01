@@ -58,3 +58,29 @@ class TeableService:
         response.raise_for_status()
         records = response.json().get('records', [])
         return records[0] if records else {}
+
+    def update(self, table_id: str, record_id: str, fields: dict) -> dict:
+        """
+        Update an existing record in a specific table.
+
+        Args:
+            table_id (str): The unique identifier of the table.
+            record_id (str): The unique identifier of the record.
+            fields (dict): A dictionary of field values to update.
+
+        Returns:
+            dict: The updated record.
+        """
+        url = f'{self.base_url}/api/table/{table_id}/record'
+        payload = {
+            "fieldKeyType": "name",
+            "records": [{"id": record_id, "fields": fields}]
+        }
+        response = requests.patch(url,
+                                  headers=self.__get_headers(),
+                                  json=payload)
+        if response.status_code != 200:
+            print(response.text)
+        response.raise_for_status()
+        records = response.json().get('records', [])
+        return records[0] if records else {}

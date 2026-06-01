@@ -38,8 +38,8 @@ class BudgetManager {
 
     async #fetchBudgets() {
         const [active, inactive] = await Promise.all([
-            ApiService.fetchJson('/api/budgets/active'),
-            ApiService.fetchJson('/api/budgets/inactive')
+            ApiService.fetchJson('/api/budgets/active/'),
+            ApiService.fetchJson('/api/budgets/inactive/')
         ]);
 
         this.#state.activeBudgets = active || [];

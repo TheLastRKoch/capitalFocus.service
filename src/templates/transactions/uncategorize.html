@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% set active_page = 'dashboard' %}
+{% load static %}
 
 {% block title %}Dashboard - Capital Focus{% endblock %}
 
@@ -102,5 +102,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{{ url_for('static', filename='scripts/transactions/uncategorize.js') }}"></script>
+<script type="module" src="{% static 'scripts/transactions/uncategorize.js' %}"></script>
 {% endblock %}

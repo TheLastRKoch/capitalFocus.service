@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% set active_page = 'budgets' %}
+{% load static %}
 
 {% block title %}Budget Details - Capital Focus{% endblock %}
 
 {% block content %}
 <!-- Page Header -->
 <div class="d-flex align-items-center mb-5 fade-in">
-    <a href="{{ url_for('budgets.index') }}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
+    <a href="{% url 'budgets:index' %}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
         style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
         <i class="bi bi-arrow-left fs-5"></i>
     </a>
@@ -14,7 +14,7 @@
         <h2 class="fw-bold mb-0" id="budgetTitle">Loading...</h2>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{{ url_for('budgets.index') }}"
+                <li class="breadcrumb-item"><a href="{% url 'budgets:index' %}"
                         class="text-decoration-none text-muted">Budgets</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Details</li>
             </ol>
@@ -167,6 +167,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
-<script type="module" src="{{ url_for('static', filename='scripts/budgets/details.js') }}"></script>
+<script type="module" src="{% static 'scripts/budgets/details.js' %}"></script>
 {% endblock %}

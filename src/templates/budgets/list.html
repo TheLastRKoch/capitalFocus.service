@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% set active_page = 'budgets' %}
+{% load static %}
 
 {% block title %}Budgets - Capital Focus{% endblock %}
 
@@ -136,6 +136,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
-<script type="module" src="{{ url_for('static', filename='scripts/budgets/list.js') }}"></script>
+<script type="module" src="{% static 'scripts/budgets/list.js' %}"></script>
 {% endblock %}

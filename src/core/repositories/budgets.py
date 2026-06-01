@@ -1,4 +1,4 @@
-from repositories.base import BaseRepository
+from core.repositories.base import BaseRepository
 
 
 class BudgetsRepository(BaseRepository):

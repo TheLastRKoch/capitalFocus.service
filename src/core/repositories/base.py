@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from services.teable import TeableService
+from core.services.teable import TeableService
 
 class BaseRepository(ABC):
     """Abstract base repository for Teable entities."""
@@ -38,3 +38,16 @@ class BaseRepository(ABC):
             dict: The created record.
         """
         return self.teable.create(self.table_id, fields)
+
+    def update(self, entity_id: str, fields: dict) -> dict:
+        """
+        Update an existing record in the table.
+
+        Args:
+            entity_id (str): The ID of the record to update.
+            fields (dict): The field values to update.
+
+        Returns:
+            dict: The updated record.
+        """
+        return self.teable.update(self.table_id, entity_id, fields)

@@ -95,14 +95,14 @@ class BudgetDetailsManager {
     }
 
     async #fetchActiveBudget() {
-        const budgets = await ApiService.fetchJson('/api/budgets/active');
+        const budgets = await ApiService.fetchJson('/api/budgets/active/');
         if (budgets?.length > 0) {
             this.#budgetId = budgets[0].id;
         }
     }
 
     async #fetchBudgetDetails() {
-        this.#budget = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}`);
+        this.#budget = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/`);
         this.#render();
     }
 
