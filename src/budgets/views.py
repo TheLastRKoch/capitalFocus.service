@@ -7,14 +7,11 @@ from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
 from core.services.budgets import BudgetService
-from core.services.teable import TeableService
 
 # Dependency Setup
-teable_service = TeableService(settings.TEABLE_API_TOKEN, settings.TEABLE_URL)
-budgets_repo = BudgetsRepository(teable_service, settings.TEABLE_BUDGETS)
-sections_repo = SectionsRepository(teable_service, settings.TEABLE_SECTIONS)
-transactions_repo = TransactionsRepository(teable_service,
-                                           settings.TEABLE_TRANSACTIONS)
+budgets_repo = BudgetsRepository()
+sections_repo = SectionsRepository()
+transactions_repo = TransactionsRepository()
 budget_service = BudgetService(budgets_repo, sections_repo, transactions_repo)
 
 # --- Template Views ---

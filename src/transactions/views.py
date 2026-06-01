@@ -4,11 +4,9 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.transactions import TransactionsRepository
-from core.services.teable import TeableService
 
 # Dependency Setup
-teable_service = TeableService(settings.TEABLE_API_TOKEN, settings.TEABLE_URL)
-transactions_repo = TransactionsRepository(teable_service, settings.TEABLE_TRANSACTIONS)
+transactions_repo = TransactionsRepository()
 
 # --- Template Views ---
 

@@ -83,5 +83,5 @@ class BudgetService:
         """
         # Link to the budget. Teable link fields usually expect a list of IDs or objects.
         # In Teable, link fields are typically lists of IDs.
-        section_data['budgets'] = {id: budget_id}
+        section_data['budgets'] = {'id': budget_id}
         return self.sections_repo.create(section_data)
