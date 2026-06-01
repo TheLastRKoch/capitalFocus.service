@@ -8,7 +8,7 @@ class CategoriesModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'budgets_categories'
+        db_table = 'categories'
         verbose_name_plural = 'Categories'
 
     def __str__(self):
@@ -25,7 +25,7 @@ class SubcategoriesModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'budgets_subcategories'
+        db_table = 'subcategories'
         verbose_name_plural = 'Subcategories'
 
     def __str__(self):
