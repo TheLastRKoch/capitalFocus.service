@@ -1,8 +1,11 @@
 from core.repositories.base import BaseRepository
-
+from budgets.models import Section
 
 class SectionsRepository(BaseRepository):
-    """Repository for managing section records via Teable."""
+    """Repository for managing section records via Django ORM."""
+
+    def __init__(self) -> None:
+        super().__init__(Section)
 
     def filter_by_budget(self, budget_id: str) -> list:
         """
@@ -14,8 +17,4 @@ class SectionsRepository(BaseRepository):
         Returns:
             list: A list of sections associated with the given budget ID.
         """
-        sections = self.all()
-        return [
-            section for section in sections if section.get('fields', {}).get(
-                'budgets', {}).get('id') == budget_id
-        ]
+        return self.filter_by_field('budget_id', budget_id)

@@ -1,8 +1,11 @@
 from core.repositories.base import BaseRepository
-
+from budgets.models import Budget
 
 class BudgetsRepository(BaseRepository):
-    """Repository for managing budget records via Teable."""
+    """Repository for managing budget records via Django ORM."""
+
+    def __init__(self) -> None:
+        super().__init__(Budget)
 
     def get_by_status(self, target_status: str) -> list:
         """

@@ -93,11 +93,7 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-# Teable Settings
-TEABLE_URL = os.environ.get('TEABLE_URL', 'https://app.teable.ai')
-TEABLE_API_TOKEN = os.environ.get('TEABLE_API_TOKEN')
-TEABLE_TRANSACTIONS = os.environ.get('TEABLE_TRANSACTIONS')
-TEABLE_BUDGETS = os.environ.get('TEABLE_BUDGETS')
-TEABLE_SECTIONS = os.environ.get('TEABLE_SECTIONS')
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
