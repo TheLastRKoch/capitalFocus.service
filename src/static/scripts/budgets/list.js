@@ -132,7 +132,7 @@ class BudgetManager {
                 <div class="card h-100 border-0 shadow-sm budget-card ${opacityClass} fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${fields.Label || 'Unnamed Budget'}</h6>
+                            <h6 class="fw-bold mb-0">${fields.label || 'Unnamed Budget'}</h6>
                             ${statusBadge}
                         </div>
                         <div class="text-muted small mb-3">
