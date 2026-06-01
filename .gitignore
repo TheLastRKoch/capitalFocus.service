@@ -110,7 +110,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Remove init files
-**/__init__.py
 
 db.sqlite3
