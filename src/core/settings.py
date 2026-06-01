@@ -34,7 +34,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+<<<<<<< HEAD
 ROOT_URLCONF = 'capital_focus.urls'
+=======
+ROOT_URLCONF = 'core.urls'
+>>>>>>> 1beb4f7828be096f2a47423b0dc77638f3719e71
 
 TEMPLATES = [
     {
@@ -52,7 +56,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'capital_focus.wsgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': {
