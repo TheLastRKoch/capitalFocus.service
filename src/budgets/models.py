@@ -18,7 +18,7 @@ class BudgetsModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'budgets_budgets'
+        db_table = 'budgets'
 
     def __str__(self):
         return f"{self.label} - {self.user.label}"

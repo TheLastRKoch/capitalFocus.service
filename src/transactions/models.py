@@ -38,7 +38,7 @@ class TransactionsModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'budgets_transactions'
+        db_table = 'transactions'
 
     def __str__(self):
         return f"{self.commerce} - {self.amount}"
