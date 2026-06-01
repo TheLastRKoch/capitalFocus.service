@@ -3,7 +3,7 @@ from budgets.models import BudgetsModel
 from categories.models import CategoriesModel
 
 
-class Sections(models.Model):
+class SectionsModel(models.Model):
     """Sections model"""
     label = models.CharField(max_length=255)
     budgets = models.OneToOneField(BudgetsModel,

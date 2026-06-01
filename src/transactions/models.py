@@ -3,7 +3,7 @@ from budgets.models import Budgets
 from categories.models import SubcategoriesModel
 
 
-class Transactions(models.Model):
+class TransactionsModel(models.Model):
 
     STATUS_CHOICES = [
         ('Categorized', 'Categorized'),
