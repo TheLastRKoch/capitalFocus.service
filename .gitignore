@@ -112,3 +112,5 @@ dmypy.json
 
 # Remove init files
 **/__init__.py
+
+db.sqlite3
