@@ -69,7 +69,9 @@ def api_get_by_id(request, id):
 
 def api_get_by_id_complete(request, id):
     if request.method == 'GET':
-        budget = model_to_dict(budgets_repo.get_by_id(id))
+        budget = budgets_repo.get_by_id(id)
+        if not budget:
+            return HttpResponse(status=404)
         sections = budget_service.get_section_transactions(id)
         budget['sections'] = sections
         return JsonResponse(budget, safe=False)

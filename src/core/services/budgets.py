@@ -28,7 +28,7 @@ class BudgetService:
         for section in sections:
             dic_section = model_to_dict(section)
             dic_section['transactions'] = [
-                transaction for transaction in transactions
+                model_to_dict(transaction) for transaction in transactions
                 if transaction.subcategory.parent == section.category
             ]
             section_transactions.append(dic_section)
