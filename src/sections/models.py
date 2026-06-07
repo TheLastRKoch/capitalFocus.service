@@ -11,15 +11,21 @@ class SectionsModel(models.Model):
                                    related_name='section',
                                    null=True,
                                    blank=True)
-    categories = models.ManyToManyField(CategoriesModel,
-                                        related_name='sections',
-                                        blank=True)
-    projection = models.DecimalField(max_digits=15, decimal_places=2)
+    category = models.ForeignKey(CategoriesModel,
+                                 on_delete=models.SET_NULL,
+                                 related_name='categories',
+                                 null=True,
+                                 blank=True)
+    projection = models.DecimalField(max_digits=15,
+                                     decimal_places=2,
+                                     blank=True,
+                                     null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'sections'
+        verbose_name_plural = 'Sections'
 
     def __str__(self):
         return self.label

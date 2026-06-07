@@ -41,6 +41,9 @@ urlpatterns = [
             path('inactive/', budget_views.api_inactive, name='api_inactive'),
             path('<str:id>/', budget_views.api_get_by_id,
                  name='api_get_by_id'),
+            path('<str:id>/complete/',
+                 budget_views.api_get_by_id_complete,
+                 name='api_get_by_id_complete'),
             path('<str:id>/sections/',
                  budget_views.api_create_section,
                  name='api_create_section'),
@@ -48,7 +51,7 @@ urlpatterns = [
     path(
         'api/transactions/',
         include([
-            path('', transaction_views.api_index, name='api_index'),
+            path('', transaction_views.api_list, name='api_index'),
             path('uncategorize/',
                  transaction_views.api_uncategorize,
                  name='api_uncategorize'),

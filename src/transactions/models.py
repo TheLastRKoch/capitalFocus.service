@@ -39,6 +39,7 @@ class TransactionsModel(models.Model):
 
     class Meta:
         db_table = 'transactions'
+        verbose_name_plural = 'Transactions'
 
     def __str__(self):
         return f"{self.commerce} - {self.amount}"

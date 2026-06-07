@@ -1,21 +1,23 @@
 from core.repositories.base import BaseRepository
 from transactions.models import TransactionsModel
+from budgets.models import BudgetsModel
 
 
 class TransactionsRepository(BaseRepository):
-    """Repository for managing transaction records via Django ORM."""
 
     def __init__(self) -> None:
         super().__init__(TransactionsModel)
 
-    def get_uncategorized(self) -> list:
-        """
-        Retrieve all transactions with an 'Uncategorized' status.
+    def list_uncategorized(self) -> list:
+        return list(
+            TransactionsModel.objects.filter(status='Uncategorized').values())
 
-        Returns:
-            list: A list of uncategorized transaction records.
-        """
-        return self.filter_by_field('status', 'Uncategorized')
+    def list():
+        return list(TransactionsModel.objects.all().values())
 
-    def get_by_budget_id(self, budget_id: str) -> list:
-        return self.filter_by_field('budgets_id', budget_id)
+    def get_by_id(self, id: str) -> list:
+        return TransactionsModel.objects.filter(id=id)
+
+    def get_by_budget_id(self, budget_id):
+        budget = BudgetsModel.objects.get(id=budget_id)
+        return list(TransactionsModel.objects.filter(budgets=budget))
