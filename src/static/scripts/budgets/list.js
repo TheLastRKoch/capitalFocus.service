@@ -99,8 +99,8 @@ class BudgetManager {
 
     #render(filter = '') {
         const filterFn = b => {
-            const name = (b.fields.name || '').toLowerCase();
-            return name.includes(filter);
+            const label = (b.label || '').toLowerCase();
+            return label.includes(filter);
         };
 
         const activeToRender = this.#state.activeBudgets.filter(filterFn);
@@ -120,7 +120,7 @@ class BudgetManager {
     }
 
     #createBudgetCard(budget, isActive) {
-        const { fields, id } = budget;
+        const { label, projection, id, is_current } = budget;
         const statusBadge = isActive 
             ? '<span class="badge bg-success-subtle text-success border-0">Active</span>'
             : '<span class="badge bg-secondary-subtle text-secondary border-0">Inactive</span>';
@@ -132,14 +132,14 @@ class BudgetManager {
                 <div class="card h-100 border-0 shadow-sm budget-card ${opacityClass} fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${fields.label || 'Unnamed Budget'}</h6>
+                            <h6 class="fw-bold mb-0">${label || 'Unnamed Budget'}</h6>
                             ${statusBadge}
                         </div>
                         <div class="text-muted small mb-3">
                             <div class="mb-1">
-                                <i class="bi bi-cash-stack me-2"></i>Projection: ${Formatter.formatCurrency(fields.projection)}
+                                <i class="bi bi-cash-stack me-2"></i>Projection: ${Formatter.formatCurrency(projection)}
                             </div>
-                            ${fields.is_current ? `
+                            ${is_current ? `
                                 <div class="mt-1 text-primary fw-bold">
                                     <i class="bi bi-check-circle-fill me-2"></i>Current Budget
                                 </div>

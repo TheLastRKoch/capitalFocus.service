@@ -49,7 +49,7 @@ class BudgetDetailsManager {
         };
 
         try {
-            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections`, {
+            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections/`, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
@@ -102,7 +102,7 @@ class BudgetDetailsManager {
     }
 
     async #fetchBudgetDetails() {
-        this.#budget = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/`);
+        this.#budget = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/complete`);
         this.#render();
     }
 
@@ -116,11 +116,11 @@ class BudgetDetailsManager {
     }
 
     #render() {
-        const { fields } = this.#budget;
-        if (this.#elements.title) this.#elements.title.textContent = fields.name || 'Budget Details';
-        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(fields.projection || 0);
+        const budget = this.#budget;
+        if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
+        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
         
-        const sections = fields.sections || [];
+        const sections = budget.sections || [];
         if (sections.length === 0) {
             this.#renderEmptyState('No sections found for this budget.');
             return;
@@ -133,18 +133,17 @@ class BudgetDetailsManager {
     }
 
     #updateOverview() {
-        const totalSectionProjection = (this.#budget.fields.sections || []).reduce((acc, sec) => acc + (sec.fields.projection || 0), 0);
+        const totalSectionProjection = (this.#budget.sections || []).reduce((acc, sec) => acc + (sec.projection || 0), 0);
         if (this.#elements.remaining) {
-            const available = (this.#budget.fields.projection || 0) - totalSectionProjection;
+            const available = (this.#budget.projection || 0) - totalSectionProjection;
             this.#elements.remaining.textContent = Formatter.formatCurrency(available);
         }
     }
 
     #createSectionHtml(section, index) {
-        const { fields } = section;
-        const transactions = fields.transactions || [];
-        const totalSpent = transactions.reduce((acc, t) => acc + (t.fields.amount || 0), 0);
-        const remaining = (fields.projection || 0) - totalSpent;
+        const transactions = section.transactions || [];
+        const totalSpent = transactions.reduce((acc, t) => acc + (t.amount || 0), 0);
+        const remaining = (section.projection || 0) - totalSpent;
         const collapseId = `categoryCollapse${index}`;
         
         return `
@@ -154,8 +153,8 @@ class BudgetDetailsManager {
                         <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
                             data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
-                            <span class="fw-medium">${fields.label}</span>
-                            <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(fields.projection)}</span>
+                            <span class="fw-medium">${section.label}</span>
+                            <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
                             <span class="ms-3 small fw-bold ${remaining < 0 ? 'text-danger' : 'text-success'}">
                                 Rem: ${Formatter.formatCurrency(remaining)}
                             </span>
@@ -180,9 +179,9 @@ class BudgetDetailsManager {
                                     ${transactions.length > 0 
                                         ? transactions.map(t => `
                                             <tr class="align-middle">
-                                                <td class="text-muted border-end py-3">${Formatter.formatDate(t.fields.date)}</td>
-                                                <td class="text-dark fw-bold border-end py-3">${Formatter.formatCurrency(t.fields.amount)}</td>
-                                                <td class="text-muted py-3">${Formatter.escapeHtml(t.fields.commerce)}</td>
+                                                <td class="text-muted border-end py-3">${Formatter.formatDate(t.date)}</td>
+                                                <td class="text-dark fw-bold border-end py-3">${Formatter.formatCurrency(t.amount)}</td>
+                                                <td class="text-muted py-3">${Formatter.escapeHtml(t.commerce)}</td>
                                             </tr>
                                         `).join('')
                                         : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'

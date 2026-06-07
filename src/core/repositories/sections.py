@@ -9,6 +9,8 @@ class SectionsRepository(BaseRepository):
     def __init__(self) -> None:
         super().__init__(SectionsModel)
 
+    def all(self) -> list:
+        return list(SectionsModel.objects.all().values())
+
     def get_by_budget_id(self, budget_id: str) -> list:
-        budget = BudgetsModel.objects.get(id=budget_id)
-        return list(SectionsModel.objects.filter(budgets=budget))
+        return list(SectionsModel.objects.filter(budgets_id=budget_id).values())
