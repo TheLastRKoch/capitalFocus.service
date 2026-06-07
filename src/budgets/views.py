@@ -1,21 +1,24 @@
 import json
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
-from django.conf import settings
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
+from core.repositories.catogories import CategoriesRepository, SubcategoriesRepository
 from core.services.budgets import BudgetService
-from core.services.teable import TeableService
+from django.forms.models import model_to_dict
 
 # Dependency Setup
-teable_service = TeableService(settings.TEABLE_API_TOKEN, settings.TEABLE_URL)
-budgets_repo = BudgetsRepository(teable_service, settings.TEABLE_BUDGETS)
-sections_repo = SectionsRepository(teable_service, settings.TEABLE_SECTIONS)
-transactions_repo = TransactionsRepository(teable_service,
-                                           settings.TEABLE_TRANSACTIONS)
-budget_service = BudgetService(budgets_repo, sections_repo, transactions_repo)
+budgets_repo = BudgetsRepository()
+sections_repo = SectionsRepository()
+transactions_repo = TransactionsRepository()
+categories_repo = CategoriesRepository()
+subcategories_repo = SubcategoriesRepository()
+
+budget_service = BudgetService(budgets_repo, sections_repo, transactions_repo,
+                               categories_repo, subcategories_repo)
 
 # --- Template Views ---
 
@@ -60,7 +63,18 @@ def api_inactive(request):
 
 def api_get_by_id(request, id):
     if request.method == 'GET':
-        return JsonResponse(budget_service.get_budget_details(id))
+        return JsonResponse(budget_service.get_by_id(id))
+    return HttpResponse(status=405)
+
+
+def api_get_by_id_complete(request, id):
+    if request.method == 'GET':
+        budget = budgets_repo.get_by_id(id)
+        if not budget:
+            return HttpResponse(status=404)
+        sections = budget_service.get_section_transactions(id)
+        budget['sections'] = sections
+        return JsonResponse(budget, safe=False)
     return HttpResponse(status=405)
 
 

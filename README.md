@@ -6,7 +6,7 @@ Capital Focus is a financial management platform that provides visibility into b
 
 - **Budget Management**: Organize active and inactive budgets.
 - **Transaction Tracking**: Monitor financial activity and identify uncategorized transactions.
-- **Teable Integration**: Use Teable as a backend for data management.
+- **Django ORM Integration**: Local database management using Django's native ORM.
 - **User Interface**: A responsive interface built with Bootstrap 5.
 
 ## Architecture
@@ -33,7 +33,6 @@ This application uses dynamic client-side rendering. The frontend uses vanilla J
 ### Prerequisites
 
 - Python 3.8 or higher
-- A [Teable](https://teable.io/) account and an API key
 
 ### Installation
 
@@ -44,7 +43,7 @@ This application uses dynamic client-side rendering. The frontend uses vanilla J
     ```
 
 2.  **Configure Environment Variables**
-    Copy `env.example` to `.env` and enter your Teable credentials.
+    Copy `env.example` to `.env` and set your secret key.
     ```bash
     cp env.example .env
     ```

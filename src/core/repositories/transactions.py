@@ -1,17 +1,23 @@
 from core.repositories.base import BaseRepository
+from transactions.models import TransactionsModel
+from budgets.models import BudgetsModel
 
 
 class TransactionsRepository(BaseRepository):
-    """Repository for managing transaction records via Teable."""
 
-    def get_uncategorized(self) -> list:
-        """
-        Retrieve all transactions with an 'Uncategorized' status.
+    def __init__(self) -> None:
+        super().__init__(TransactionsModel)
 
-        Returns:
-            list: A list of uncategorized transaction records.
-        """
-        return self.filter_by_field('status', 'Uncategorized')
+    def list_uncategorized(self) -> list:
+        return list(
+            TransactionsModel.objects.filter(status='Uncategorized').values())
+
+    def list():
+        return list(TransactionsModel.objects.all().values())
+
+    def get_by_id(self, id: str) -> list:
+        return TransactionsModel.objects.filter(id=id)
 
     def get_by_budget_id(self, budget_id):
-        return self.filter_by_field('status', 'Uncategorized')
+        budget = BudgetsModel.objects.get(id=budget_id)
+        return list(TransactionsModel.objects.filter(budgets=budget))

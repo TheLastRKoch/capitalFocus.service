@@ -21,16 +21,11 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: TEABLE_BASE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: capitalfocus-config
-              key: TEABLE_BASE_URL
-        - name: TEABLE_API_KEY
+        - name: DJANGO_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: capitalfocus-secrets
-              key: TEABLE_API_KEY
+              key: DJANGO_SECRET_KEY
 ---
 apiVersion: v1
 kind: Service

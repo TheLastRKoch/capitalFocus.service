@@ -1,17 +1,18 @@
 from core.repositories.base import BaseRepository
+from budgets.models import BudgetsModel
 
 
 class BudgetsRepository(BaseRepository):
-    """Repository for managing budget records via Teable."""
+    """Repository for managing budget records via Django ORM."""
 
-    def get_by_status(self, target_status: str) -> list:
-        """
-        Retrieve budgets filtered by status.
+    def __init__(self) -> None:
+        super().__init__(BudgetsModel)
 
-        Args:
-            target_status (str): The status to filter by (e.g., 'Active', 'Inactive').
+    def list(self):
+        return list(BudgetsModel.objects.all().values())
 
-        Returns:
-            list: A list of budgets matching the given status.
-        """
-        return self.filter_by_field('status', target_status)
+    def get_by_id(self, id) -> list:
+        return BudgetsModel.objects.filter(id=id).values().first()
+
+    def get_by_status(self, status: str) -> list:
+        return list(BudgetsModel.objects.filter(status=status).values())

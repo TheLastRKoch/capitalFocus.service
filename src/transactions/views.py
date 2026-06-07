@@ -4,33 +4,39 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.transactions import TransactionsRepository
-from core.services.teable import TeableService
 
 # Dependency Setup
-teable_service = TeableService(settings.TEABLE_API_TOKEN, settings.TEABLE_URL)
-transactions_repo = TransactionsRepository(teable_service, settings.TEABLE_TRANSACTIONS)
+transactions_repo = TransactionsRepository()
 
 # --- Template Views ---
 
+
 def index(request):
-    """Render the main transactions page (redirects to uncategorize in original Flask app logic?)"""
-    return render(request, 'transactions/uncategorize.html', {'active_page': 'transactions'})
+    """Render all transactions"""
+    return render(request, 'transactions/index.html',
+                  {'active_page': 'transactions'})
+
 
 def uncategorize(request):
     """Render the uncategorized transactions page."""
-    return render(request, 'transactions/uncategorize.html', {'active_page': 'transactions'})
+    return render(request, 'transactions/uncategorize.html',
+                  {'active_page': 'transactions'})
+
 
 # --- API Views ---
 
-def api_index(request):
+
+def api_list(request):
     if request.method == 'GET':
         return JsonResponse(transactions_repo.all(), safe=False)
     return HttpResponse(status=405)
 
+
 def api_uncategorize(request):
     if request.method == 'GET':
-        return JsonResponse(transactions_repo.get_uncategorized(), safe=False)
+        return JsonResponse(transactions_repo.list_uncategorized(), safe=False)
     return HttpResponse(status=405)
+
 
 @csrf_exempt
 def api_details(request, id):
@@ -40,8 +46,12 @@ def api_details(request, id):
         # Note: Original Flask app might have had this logic in a service.
         # Here we directly update for simplicity and parity.
         fields = {
-            'budgets': [{'id': data.get('budget')}],
-            'sections': [{'id': data.get('category')}],
+            'budgets': [{
+                'id': data.get('budget')
+            }],
+            'sections': [{
+                'id': data.get('category')
+            }],
             'status': 'Categorized'
         }
         return JsonResponse(transactions_repo.update(id, fields))
