@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'categories',
+    'sections',
     'budgets',
     'transactions',
     'core',
@@ -81,23 +83,22 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / 'static',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Teable Settings
-TEABLE_URL = os.environ.get('TEABLE_URL', 'https://app.teable.ai')
-TEABLE_API_TOKEN = os.environ.get('TEABLE_API_TOKEN')
-TEABLE_TRANSACTIONS = os.environ.get('TEABLE_TRANSACTIONS')
-TEABLE_BUDGETS = os.environ.get('TEABLE_BUDGETS')
-TEABLE_SECTIONS = os.environ.get('TEABLE_SECTIONS')
+# Teable Settings (Deprecated)
+# These were used for the external Teable integration.
+# Keeping them as comments for reference during migration if needed.
+# TEABLE_URL = os.environ.get('TEABLE_URL', 'https://app.teable.ai')
+# TEABLE_API_TOKEN = os.environ.get('TEABLE_API_TOKEN')
+# TEABLE_TRANSACTIONS = os.environ.get('TEABLE_TRANSACTIONS')
+# TEABLE_BUDGETS = os.environ.get('TEABLE_BUDGETS')
+# TEABLE_SECTIONS = os.environ.get('TEABLE_SECTIONS')

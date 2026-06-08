@@ -1,6 +1,7 @@
 from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
+from core.repositories.categories import CategoriesRepository, SubcategoriesRepository
 
 
 class BudgetService:
@@ -8,80 +9,42 @@ class BudgetService:
 
     def __init__(self, budgets_repo: BudgetsRepository,
                  sections_repo: SectionsRepository,
-                 transactions_repo: TransactionsRepository) -> None:
+                 transactions_repo: TransactionsRepository,
+                 categories_repo: CategoriesRepository,
+                 subcategories_repo: SubcategoriesRepository) -> None:
         self.budgets_repo = budgets_repo
         self.sections_repo = sections_repo
         self.transactions_repo = transactions_repo
+        self.categories_repo = categories_repo
+        self.subcategories_repo = subcategories_repo
 
-    def get_budget_details(self, budget_id: str) -> dict:
-        """
-        Retrieve full details for a budget, including sections and transactions.
-        Optimized to reduce redundant calls.
-        """
-        budget = self.budgets_repo.get_by_id(budget_id)
+    def get_section_transactions(self, budget_id: str) -> list:
+        """Retrieve sections with their associated transactions for a given budget."""
+        section_transactions = []
+        transactions = self.transactions_repo.get_by_budget_id(budget_id)
+        sections = self.sections_repo.get_by_budget_id(budget_id)
 
-        # Load all sections and transactions once to avoid N+1 issues in memory
-        all_sections = {s['id']: s for s in self.sections_repo.all()}
-        all_transactions = {t['id']: t for t in self.transactions_repo.all()}
+        for section in sections:
+            section['transactions'] = [
+                transaction for transaction in transactions
+                if transaction.get('subcategory__parent_id') == section.get('category_id')
+            ]
+            section_transactions.append(section)
 
-        sections_complete = []
-        section_links = budget.get('fields', {}).get('sections', [])
+        return section_transactions
 
-        for link in section_links:
-            section_id = link.get('id')
-            section = all_sections.get(section_id)
-
-            if section:
-                # Create a copy to avoid mutating the cached section
-                section_copy = dict(section)
-                section_copy['fields'] = dict(section.get('fields', {}))
-
-                transaction_links = section_copy['fields'].get(
-                    'transactions', [])
-                transactions_complete = []
-
-                for t_link in transaction_links:
-                    t_id = t_link.get('id')
-                    transaction = all_transactions.get(t_id)
-                    if transaction:
-                        transactions_complete.append(transaction)
-
-                section_copy['fields']['transactions'] = transactions_complete
-                sections_complete.append(section_copy)
-
-        budget_copy = dict(budget)
-        budget_copy['fields'] = dict(budget.get('fields', {}))
-        budget_copy['fields']['sections'] = sections_complete
-
-        return budget_copy
+    def get_by_id(self, budget_id: str) -> dict:
+        """Retrieve a budget by its ID."""
+        return self.budgets_repo.get_by_id(budget_id)
 
     def create_budget(self, budget_data: dict) -> dict:
-        """
-        Create a new budget record.
-
-        Args:
-            budget_data (dict): The data for the new budget.
-
-        Returns:
-            dict: The created budget record.
-        """
+        """Create a new budget record."""
         if 'status' not in budget_data:
             budget_data['status'] = 'Active'
 
         return self.budgets_repo.create(budget_data)
 
     def create_section(self, budget_id: str, section_data: dict) -> dict:
-        """
-        Create a new section record linked to a budget.
-
-        Args:
-            budget_id (str): The ID of the budget to link the section to.
-            section_data (dict): The data for the new section.
-
-        Returns:
-            dict: The created section record.
-        """
-        # Link to the budget. Teable link fields usually expect a list of IDs or objects.
-        # In Teable, link fields are typically lists of IDs.
-        section_data['budgets'] = {id: budget_id}
+        """Create a new section record linked to a budget."""
+        section_data['budgets_id'] = budget_id
         return self.sections_repo.create(section_data)
