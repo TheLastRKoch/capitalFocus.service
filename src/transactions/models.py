@@ -42,4 +42,4 @@ class TransactionsModel(models.Model):
         verbose_name_plural = 'Transactions'
 
     def __str__(self):
-        return f"{self.commerce} - {self.amount}"
+        return f'{self.commerce} - {self.amount}'
