@@ -6,11 +6,11 @@ from categories.models import CategoriesModel
 class SectionsModel(models.Model):
     """Sections model"""
     label = models.CharField(max_length=255)
-    budgets = models.OneToOneField(BudgetsModel,
-                                   on_delete=models.CASCADE,
-                                   related_name='section',
-                                   null=True,
-                                   blank=True)
+    budgets = models.ForeignKey(BudgetsModel,
+                                on_delete=models.CASCADE,
+                                related_name='budgets',
+                                blank=True,
+                                null=True)
     category = models.ForeignKey(CategoriesModel,
                                  on_delete=models.SET_NULL,
                                  related_name='categories',
