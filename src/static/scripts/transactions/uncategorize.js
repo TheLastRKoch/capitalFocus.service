@@ -43,7 +43,7 @@ class TransactionManager {
     async init() {
         try {
             const data = await ApiService.fetchJson('/api/transactions/uncategorize/');
-            this.#transactions = data.records || [];
+            this.#transactions = data || [];
             this.#render();
         } catch (error) {
             this.#renderError('Failed to load transactions.');
@@ -70,18 +70,18 @@ class TransactionManager {
     }
 
     #createCardHtml(transaction) {
-        const { fields, id } = transaction;
+        const { commerce, date, amount, id } = transaction;
         return `
             <div class="col-12 col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm transaction-card fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${Formatter.escapeHtml(fields.commerce || 'Unknown')}</h6>
+                            <h6 class="fw-bold mb-0">${Formatter.escapeHtml(commerce || 'Unknown')}</h6>
                             <span class="badge bg-warning-subtle text-warning border-0 small">Pending</span>
                         </div>
                         <div class="text-muted small mb-3">
-                            <div><i class="bi bi-calendar3 me-2"></i>${Formatter.formatDate(fields.date)}</div>
-                            <div class="fw-bold text-dark mt-1 fs-5">${Formatter.formatCurrency(fields.amount)}</div>
+                            <div><i class="bi bi-calendar3 me-2"></i>${Formatter.formatDate(date)}</div>
+                            <div class="fw-bold text-dark mt-1 fs-5">${Formatter.formatCurrency(amount)}</div>
                         </div>
                         <button class="btn btn-primary btn-sm w-100 rounded-pill categorize-btn shadow-sm" data-id="${id}">
                             Categorize
@@ -95,16 +95,15 @@ class TransactionManager {
     #selectTransaction(transaction) {
         if (!transaction) return;
         
-        const { fields } = transaction;
         this.#currentId = transaction.id;
         
         // Fill form
         const mapping = {
-            'modalCommerce': fields.commerce,
-            'modalDate': fields.date,
-            'modalAmount': fields.amount,
-            'modalLocation': fields.location,
-            'modalCard': fields.card
+            'modalCommerce': transaction.commerce,
+            'modalDate': transaction.date,
+            'modalAmount': transaction.amount,
+            'modalLocation': transaction.location,
+            'modalCard': transaction.card
         };
 
         for (const [id, value] of Object.entries(mapping)) {

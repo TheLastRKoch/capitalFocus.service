@@ -26,12 +26,11 @@ class BudgetService:
         sections = self.sections_repo.get_by_budget_id(budget_id)
 
         for section in sections:
-            dic_section = model_to_dict(section)
-            dic_section['transactions'] = [
-                model_to_dict(transaction) for transaction in transactions
-                if transaction.subcategory.parent == section.category
+            section['transactions'] = [
+                transaction for transaction in transactions
+                if transaction.get('subcategory__parent_id') == section.get('category_id')
             ]
-            section_transactions.append(dic_section)
+            section_transactions.append(section)
 
         return section_transactions
 
