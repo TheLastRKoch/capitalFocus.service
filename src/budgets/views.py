@@ -1,14 +1,12 @@
 import json
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
-from core.repositories.catogories import CategoriesRepository, SubcategoriesRepository
+from core.repositories.categories import CategoriesRepository, SubcategoriesRepository
 from core.services.budgets import BudgetService
-from django.forms.models import model_to_dict
 
 # Dependency Setup
 budgets_repo = BudgetsRepository()
@@ -41,33 +39,38 @@ def details(request, id):
 
 @csrf_exempt
 def api_index(request):
+    """API endpoint for listing or creating budgets."""
     if request.method == 'GET':
         return JsonResponse(budgets_repo.all(), safe=False)
-    elif request.method == 'POST':
+    if request.method == 'POST':
         data = json.loads(request.body)
         return JsonResponse(budget_service.create_budget(data), status=201)
     return HttpResponse(status=405)
 
 
 def api_active(request):
+    """API endpoint for listing active budgets."""
     if request.method == 'GET':
         return JsonResponse(budgets_repo.get_by_status('Active'), safe=False)
     return HttpResponse(status=405)
 
 
 def api_inactive(request):
+    """API endpoint for listing inactive budgets."""
     if request.method == 'GET':
         return JsonResponse(budgets_repo.get_by_status('Inactive'), safe=False)
     return HttpResponse(status=405)
 
 
 def api_get_by_id(request, id):
+    """API endpoint for retrieving a budget by ID."""
     if request.method == 'GET':
-        return JsonResponse(budget_service.get_by_id(id))
+        return JsonResponse(budget_service.get_by_id(id), safe=False)
     return HttpResponse(status=405)
 
 
 def api_get_by_id_complete(request, id):
+    """API endpoint for retrieving a complete budget with sections and transactions."""
     if request.method == 'GET':
         budget = budgets_repo.get_by_id(id)
         if not budget:
@@ -80,6 +83,7 @@ def api_get_by_id_complete(request, id):
 
 @csrf_exempt
 def api_create_section(request, id):
+    """API endpoint for creating a section in a budget."""
     if request.method == 'POST':
         data = json.loads(request.body)
         return JsonResponse(budget_service.create_section(id, data),

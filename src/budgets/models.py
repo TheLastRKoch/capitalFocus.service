@@ -24,4 +24,4 @@ class BudgetsModel(models.Model):
         verbose_name_plural = 'Budgets'
 
     def __str__(self):
-        return f"{self.label} - {self.user.username}"
+        return f'{self.label} - {self.user.username}'

@@ -29,4 +29,4 @@ class SubcategoriesModel(models.Model):
         verbose_name_plural = 'Subcategories'
 
     def __str__(self):
-        return f"{self.label} ({self.parent.label})"
+        return f'{self.label} ({self.parent.label})'

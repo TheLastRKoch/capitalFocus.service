@@ -1,9 +1,7 @@
 from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
-from core.repositories.catogories import CategoriesRepository, SubcategoriesRepository
-import json
-from django.forms.models import model_to_dict
+from core.repositories.categories import CategoriesRepository, SubcategoriesRepository
 
 
 class BudgetService:
@@ -20,7 +18,8 @@ class BudgetService:
         self.categories_repo = categories_repo
         self.subcategories_repo = subcategories_repo
 
-    def get_section_transactions(self, budget_id: str) -> dict:
+    def get_section_transactions(self, budget_id: str) -> list:
+        """Retrieve sections with their associated transactions for a given budget."""
         section_transactions = []
         transactions = self.transactions_repo.get_by_budget_id(budget_id)
         sections = self.sections_repo.get_by_budget_id(budget_id)
@@ -35,35 +34,17 @@ class BudgetService:
         return section_transactions
 
     def get_by_id(self, budget_id: str) -> dict:
+        """Retrieve a budget by its ID."""
         return self.budgets_repo.get_by_id(budget_id)
 
     def create_budget(self, budget_data: dict) -> dict:
-        """
-        Create a new budget record.
-
-        Args:
-            budget_data (dict): The data for the new budget.
-
-        Returns:
-            dict: The created budget record.
-        """
+        """Create a new budget record."""
         if 'status' not in budget_data:
             budget_data['status'] = 'Active'
 
         return self.budgets_repo.create(budget_data)
 
     def create_section(self, budget_id: str, section_data: dict) -> dict:
-        """
-        Create a new section record linked to a budget.
-
-        Args:
-            budget_id (str): The ID of the budget to link the section to.
-            section_data (dict): The data for the new section.
-
-        Returns:
-            dict: The created section record.
-        """
-        # Link to the budget. Teable link fields usually expect a list of IDs or objects.
-        # In Teable, link fields are typically lists of IDs.
-        section_data['budgets'] = {'id': budget_id}
+        """Create a new section record linked to a budget."""
+        section_data['budgets_id'] = budget_id
         return self.sections_repo.create(section_data)
