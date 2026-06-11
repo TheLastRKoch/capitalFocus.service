@@ -56,6 +56,7 @@ export class Formatter {
      * Escapes HTML to prevent XSS
      */
     static escapeHtml(text) {
+        if (text === null || text === undefined) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
@@ -125,5 +126,45 @@ export class NotificationService {
         toast.show();
         
         toastElement.addEventListener('hidden.bs.toast', () => toastElement.remove());
+    }
+}
+
+/**
+ * Base Component for UI Managers
+ * Provides common functionality for loading states, error handling, and DOM management.
+ */
+export class BaseManager {
+    constructor() {
+        if (this.constructor === BaseManager) {
+            throw new Error('BaseManager is an abstract class.');
+        }
+    }
+
+    showLoader(element) {
+        element?.classList.remove('d-none');
+    }
+
+    hideLoader(element) {
+        element?.classList.add('d-none');
+    }
+
+    renderError(container, message) {
+        if (!container) return;
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <p class="text-danger">${Formatter.escapeHtml(message)}</p>
+                <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="location.reload()">Retry</button>
+            </div>
+        `;
+    }
+
+    renderEmpty(container, message) {
+        if (!container) return;
+        container.innerHTML = `<div class="text-center py-4 text-muted">${Formatter.escapeHtml(message)}</div>`;
+    }
+
+    getModal(element) {
+        if (!element) return null;
+        return bootstrap.Modal.getOrCreateInstance(element);
     }
 }
