@@ -9,5 +9,5 @@ urlpatterns = [
 
     # API URLs
     path('api/uncategorize/', views.api_uncategorize, name='api_uncategorize'),
-    path('api/transactions/', views.api_list, name='transactions_list'),
+    path('api/transactions/', views.api_list, name='api_transactions'),
 ]

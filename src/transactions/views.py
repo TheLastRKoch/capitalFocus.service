@@ -22,6 +22,7 @@ def uncategorize(request):
     return render(request, 'transactions/uncategorize.html',
                   {'active_page': 'transactions'})
 
+
 def import_transactions(request):
     return render(request, 'transactions/import.html',
                   {'active_page': 'transactions'})
@@ -33,6 +34,25 @@ def import_transactions(request):
 def api_list(request):
     if request.method == 'GET':
         return JsonResponse(transactions_repo.all(), safe=False)
+    elif request.method == 'POST':
+        payload = json.loads(request.body)
+        for transaction in payload:
+            transactions_repo.add(
+                date=transaction.get('date'),
+                commerce=transaction.get('commerce'),
+                amount=transaction.get('amount'),
+                location=transaction.get('location'),
+                card=transaction.get('card'),
+                authorization=transaction.get('authorization'),
+                reference=transaction.get('reference'),
+                transactionType=transaction.get('transactionType'),
+                subcategory=transaction.get('subcategory'),
+                status=transaction.get('status'),
+                json=transaction.get('json'),
+                html=transaction.get('html'),
+                budgets=transaction.get('budgets'),
+            )
+        return JsonResponse("Transactions added succesfully", safe=False)
     return HttpResponse(status=405)
 
 
