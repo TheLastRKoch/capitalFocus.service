@@ -32,7 +32,15 @@ def import_transactions(request):
 
 def api_list(request):
     if request.method == 'GET':
-        return JsonResponse(transactions_repo.all(), safe=False)
+        try:
+            limit = int(request.GET.get('limit', 50))
+            page = int(request.GET.get('page', 1))
+        except ValueError:
+            limit = 50
+            page = 1
+
+        offset = (page - 1) * limit
+        return JsonResponse(transactions_repo.list_paginated(limit, offset))
     return HttpResponse(status=405)
 
 

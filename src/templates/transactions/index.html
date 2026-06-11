@@ -98,7 +98,7 @@
 </div>
 
 <!-- Table Card -->
-<div id="tableContainer" class="card border-0 shadow-sm rounded-4 fade-in mb-5" style="animation-delay: 0.2s;">
+<div id="tableContainer" class="card border-0 shadow-sm rounded-4 fade-in mb-4" style="animation-delay: 0.2s;">
     <div class="table-wrapper rounded-4">
         <table class="table table-hover align-middle mb-0">
             <thead class="bg-light">
@@ -114,6 +114,24 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<!-- Pagination -->
+<div id="paginationContainer" class="d-flex align-items-center justify-content-between fade-in mb-5" style="animation-delay: 0.25s;">
+    <div class="d-flex align-items-center gap-3">
+        <span class="text-muted small">Show</span>
+        <select id="limitSelect" class="form-select form-select-sm rounded-pill px-3 shadow-none border" style="width: auto;">
+            <option value="50" selected>50</option>
+            <option value="100">100</option>
+            <option value="200">200</option>
+        </select>
+        <span class="text-muted small">per page</span>
+    </div>
+    <nav aria-label="Transaction pagination">
+        <ul id="paginationList" class="pagination pagination-sm mb-0">
+            <!-- Injected by JS -->
+        </ul>
+    </nav>
 </div>
 
 <!-- Empty State -->
