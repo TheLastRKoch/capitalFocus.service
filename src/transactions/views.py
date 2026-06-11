@@ -22,6 +22,10 @@ def uncategorize(request):
     return render(request, 'transactions/uncategorize.html',
                   {'active_page': 'transactions'})
 
+def import_transactions(request):
+    return render(request, 'transactions/import.html',
+                  {'active_page': 'transactions'})
+
 
 # --- API Views ---
 
