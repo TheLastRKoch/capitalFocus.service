@@ -19,6 +19,16 @@ class BaseRepository(ABC):
         """Retrieve all records from the table."""
         return list(self.model.objects.all().values())
 
+    def list_paginated(self, limit: int = 50, offset: int = 0) -> dict:
+        """Retrieve a paginated list of records."""
+        queryset = self.model.objects.all()
+        count = queryset.count()
+        results = list(queryset[offset:offset + limit].values())
+        return {
+            'count': count,
+            'results': results
+        }
+
     def get_by_id(self, entity_id: str) -> dict:
         """Retrieve a specific record by its ID."""
         try:
