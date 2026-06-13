@@ -30,6 +30,7 @@ def import_transactions(request):
 # --- API Views ---
 
 
+@csrf_exempt
 def api_list(request):
     if request.method == 'GET':
         try:
@@ -41,6 +42,37 @@ def api_list(request):
 
         offset = (page - 1) * limit
         return JsonResponse(transactions_repo.list_paginated(limit, offset))
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            if not isinstance(data, list):
+                return JsonResponse({'error': 'Expected a list of transactions'}, status=400)
+
+            # Get valid field names for the model
+            valid_fields = {f.name for f in transactions_repo.model._meta.get_fields() if not f.auto_created}
+            # Also include the _id versions of foreign keys
+            valid_fields.update({f.name + '_id' for f in transactions_repo.model._meta.get_fields() if f.is_relation and not f.auto_created})
+
+            results = []
+            for item in data:
+                # Map 'budget' to 'budgets_id' if provided
+                if 'budget' in item:
+                    item['budgets_id'] = item.pop('budget')
+                # Map 'subcategory' to 'subcategory_id' if provided
+                if 'subcategory' in item:
+                    item['subcategory_id'] = item.pop('subcategory')
+
+                # Filter item to only include valid fields
+                filtered_item = {k: v for k, v in item.items() if k in valid_fields}
+                
+                if filtered_item:
+                    results.append(transactions_repo.create(filtered_item))
+
+            return JsonResponse({'status': 'success', 'created': len(results)}, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
     return HttpResponse(status=405)
 
 

@@ -3,7 +3,7 @@
  * Handles CSV file parsing and preview.
  */
 
-import { Formatter, NotificationService, BaseManager } from '../app.js';
+import { ApiService, Formatter, NotificationService, BaseManager } from '../app.js';
 
 class TransactionImportManager extends BaseManager {
     #state = {
@@ -75,11 +75,38 @@ class TransactionImportManager extends BaseManager {
             this.#hideModalError();
         });
 
-        this.#elements.importBtn?.addEventListener("click", () => {
-            NotificationService.show(`Importing ${this.#state.parsedData.rows.length} rows...`, 'info');
-        });
+        this.#elements.importBtn?.addEventListener("click", () => this.#handleImport());
 
         this.#elements.clearBtn?.addEventListener("click", () => this.#clearData());
+    }
+
+    async #handleImport() {
+        if (this.#state.parsedData.rows.length === 0) return;
+
+        this.#elements.importBtn.disabled = true;
+        NotificationService.show(`Importing ${this.#state.parsedData.rows.length} rows...`, 'info');
+
+        const transactions = this.#state.parsedData.rows.map(row => {
+            const obj = {};
+            this.#state.parsedData.headers.forEach((header, index) => {
+                obj[header] = row[index];
+            });
+            return obj;
+        });
+
+        try {
+            const result = await ApiService.fetchJson('/api/transactions/', {
+                method: 'POST',
+                body: JSON.stringify(transactions)
+            });
+
+            NotificationService.show(`Successfully imported ${result.created} transactions!`, 'success');
+            this.#clearData();
+        } catch (error) {
+            console.error('Import error:', error);
+            NotificationService.show(`Error: ${error.message}`, 'danger');
+            this.#elements.importBtn.disabled = false;
+        }
     }
 
     #handleFormSubmit(e) {
