@@ -149,7 +149,23 @@ class TransactionImportManager extends BaseManager {
         let row = [];
         let inQuotes = false;
 
-        const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        // Handle BOM and normalize line endings
+        let cleanText = text.startsWith('\uFEFF') ? text.substring(1) : text;
+        const normalized = cleanText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+        // Simple delimiter detection
+        const firstLine = normalized.split('\n')[0];
+        const delimiters = [",", ";", "\t", "|"];
+        let delimiter = ",";
+        let maxCount = -1;
+
+        delimiters.forEach(d => {
+            const count = firstLine.split(d).length;
+            if (count > maxCount) {
+                maxCount = count;
+                delimiter = d;
+            }
+        });
 
         for (let i = 0; i < normalized.length; i++) {
             const char = normalized[i];
@@ -168,7 +184,7 @@ class TransactionImportManager extends BaseManager {
             } else {
                 if (char === '"') {
                     inQuotes = true;
-                } else if (char === ",") {
+                } else if (char === delimiter) {
                     row.push(field);
                     field = "";
                 } else if (char === "\n") {
