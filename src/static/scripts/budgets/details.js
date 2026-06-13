@@ -50,7 +50,7 @@ class BudgetDetailsManager extends BaseManager {
         };
 
         try {
-            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections/`, {
+            await ApiService.fetchJson(`/api/sections/${this.#budgetId}/sections`, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
@@ -108,22 +108,56 @@ class BudgetDetailsManager extends BaseManager {
         this.#render();
     }
 
-    #render() {
-        const budget = this.#budget;
-        if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
-        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
-        
-        const sections = budget.sections || [];
-        if (sections.length === 0) {
-            this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
-            return;
-        }
+     #render() {
+         const budget = this.#budget;
+         if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
+         if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
+         
+         const sections = budget.sections || [];
+         if (sections.length === 0) {
+             this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
+             return;
+         }
 
-        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
-        if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
-        
-        this.#updateOverview();
-    }
+         const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
+         if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
+         
+         // Setup event listeners for balance buttons
+         this.#setupBalanceButtons();
+         this.#updateOverview();
+     }
+
+     #setupBalanceButtons() {
+         const balanceButtons = this.#elements.accordion?.querySelectorAll('[data-balance-btn]');
+         balanceButtons?.forEach(btn => {
+             btn.addEventListener('click', async (e) => {
+                 e.preventDefault();
+                 const sectionId = btn.dataset.sectionId;
+                 const budgetId = btn.dataset.budgetId;
+                 const currentProjection = parseFloat(btn.dataset.projection);
+                 const remaining = parseFloat(btn.dataset.remaining);
+                 
+                 await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
+             });
+         });
+     }
+
+     async #handleBalanceSection(budgetId, sectionId, currentProjection, remaining) {
+         // If remaining is negative, multiply by -1 to get positive value
+         const newProjection = remaining < 0 ? currentProjection + (remaining * -1) : remaining;
+         
+         try {
+             await ApiService.fetchJson(`/api/sections/${sectionId}`, {
+                 method: 'PUT',
+                 body: JSON.stringify({ projection: newProjection })
+             });
+             
+             NotificationService.show('Section balanced successfully!', 'success');
+             await this.init();
+         } catch (error) {
+             NotificationService.show('Failed to balance section.', 'danger');
+         }
+     }
 
     #updateOverview() {
         const totalSectionProjection = (this.#budget.sections || []).reduce((acc, sec) => acc + (sec.projection || 0), 0);
@@ -135,9 +169,9 @@ class BudgetDetailsManager extends BaseManager {
 
     #createSectionHtml(section, index) {
         const transactions = section.transactions || [];
-        const totalSpent = transactions.reduce((acc, t) => acc + (t.amount || 0), 0);
-        const remaining = (section.projection || 0) - totalSpent;
+        const remaining = section.remaining !== undefined ? section.remaining : 0;
         const collapseId = `categoryCollapse${index}`;
+        const sectionId = section.id;
         
         return `
             <div class="card mb-3 border-0 shadow-sm">
@@ -152,8 +186,13 @@ class BudgetDetailsManager extends BaseManager {
                                 Rem: ${Formatter.formatCurrency(remaining)}
                             </span>
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 border-0">
-                            <i class="bi bi-pencil me-1"></i> Edit
+                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 border-0" 
+                            data-balance-btn
+                            data-section-id="${sectionId}"
+                            data-budget-id="${this.#budgetId}"
+                            data-remaining="${remaining}"
+                            data-projection="${section.projection || 0}">
+                            <i class="bi bi-brilliance"></i>  Balance
                         </button>
                     </div>
                 </div>

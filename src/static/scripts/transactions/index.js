@@ -32,12 +32,17 @@ class TransactionsListManager extends BaseManager {
     #sortDirection = 'desc';
 
     #columns = [
-        { key: 'commerce', label: 'Commerce', sortable: true },
         { key: 'date', label: 'Date', sortable: true },
+        { key: 'commerce', label: 'Commerce', sortable: true },
         { key: 'amount', label: 'Amount', sortable: true, type: 'currency' },
-        { key: 'category_name', label: 'Category', sortable: true },
-        { key: 'budget_name', label: 'Budget', sortable: true },
-        { key: 'status', label: 'Status', sortable: true }
+        { key: 'location', label: 'Location', sortable: true },
+        { key: 'card', label: 'Card', sortable: true },
+        { key: 'authorization', label: 'Authorization', sortable: true },
+        { key: 'reference', label: 'Reference', sortable: true },
+        { key: 'transactionType', label: 'Transaction Type', sortable: true },
+        { key: 'category_name', label: 'Subcategory', sortable: true },
+        { key: 'status', label: 'Status', sortable: true },
+        { key: 'budget_name', label: 'Budget', sortable: true }
     ];
 
     constructor() {
@@ -118,6 +123,10 @@ class TransactionsListManager extends BaseManager {
             this.#renderFilters(); // Reset filter inputs
         });
 
+        this.#elements.downloadBtn?.addEventListener('click', () => {
+            window.location.href = '/api/transactions/export/';
+        });
+
         this.#elements.tableHead?.addEventListener('click', (e) => {
             const th = e.target.closest('.sortable');
             if (th) {
@@ -177,7 +186,7 @@ class TransactionsListManager extends BaseManager {
         this.#filteredTransactions = this.#transactions.filter(t => {
             // Global search
             if (this.#filters.global) {
-                const searchStr = `${t.commerce} ${t.category_name} ${t.budget_name} ${t.status}`.toLowerCase();
+                const searchStr = `${t.date} ${t.commerce} ${t.amount} ${t.location} ${t.card} ${t.authorization} ${t.reference} ${t.transactionType} ${t.category_name} ${t.budget_name} ${t.status}`.toLowerCase();
                 if (!searchStr.includes(this.#filters.global)) return false;
             }
 
@@ -230,6 +239,11 @@ class TransactionsListManager extends BaseManager {
         }
 
         this.#elements.resultInfo.textContent = `${this.#filteredTransactions.length} transactions`;
+        
+        if (this.#elements.downloadBtn) {
+            this.#elements.downloadBtn.disabled = this.#filteredTransactions.length === 0;
+        }
+
         this.#renderPagination();
         this.#renderHeader(); // Refresh sort indicators
     }
@@ -237,16 +251,21 @@ class TransactionsListManager extends BaseManager {
     #createRowHtml(t) {
         return `
             <tr>
-                <td><span class="fw-bold text-dark">${Formatter.escapeHtml(t.commerce || 'N/A')}</span></td>
                 <td><span class="text-muted">${Formatter.formatDate(t.date)}</span></td>
+                <td><span class="fw-bold text-dark">${Formatter.escapeHtml(t.commerce || 'N/A')}</span></td>
                 <td><span class="fw-bold ${t.amount < 0 ? 'text-danger' : 'text-success'}">${Formatter.formatCurrency(t.amount)}</span></td>
+                <td><span class="text-muted">${Formatter.escapeHtml(t.location || '')}</span></td>
+                <td><span class="text-muted">${Formatter.escapeHtml(t.card || '')}</span></td>
+                <td><span class="text-muted">${Formatter.escapeHtml(t.authorization || '')}</span></td>
+                <td><span class="text-muted">${Formatter.escapeHtml(t.reference || '')}</span></td>
+                <td><span class="text-muted">${Formatter.escapeHtml(t.transactionType || '')}</span></td>
                 <td><span class="badge bg-light text-dark border">${Formatter.escapeHtml(t.category_name || 'Uncategorized')}</span></td>
-                <td><span class="badge bg-primary-subtle text-primary border-0">${Formatter.escapeHtml(t.budget_name || 'N/A')}</span></td>
                 <td>
                     <span class="badge ${t.status === 'Categorized' ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning'} border-0">
                         ${Formatter.escapeHtml(t.status)}
                     </span>
                 </td>
+                <td><span class="badge bg-primary-subtle text-primary border-0">${Formatter.escapeHtml(t.budget_name || 'N/A')}</span></td>
             </tr>
         `;
     }
@@ -259,26 +278,26 @@ class TransactionsListManager extends BaseManager {
         }
 
         let html = `
-            <li class="page-item ${this.#currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${this.#currentPage - 1}">&laquo;</a>
+            <li class="page-item ${this.#currentPage === 1 ? 'disabled' : ''} me-2">
+                <a class="page-link rounded-circle border-0" href="#" data-page="${this.#currentPage - 1}">&laquo;</a>
             </li>
         `;
 
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= this.#currentPage - 2 && i <= this.#currentPage + 2)) {
                 html += `
-                    <li class="page-item ${this.#currentPage === i ? 'active' : ''}">
-                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    <li class="page-item ${this.#currentPage === i ? 'active' : ''} mx-1">
+                        <a class="page-link rounded-circle border-0" href="#" data-page="${i}">${i}</a>
                     </li>
                 `;
             } else if (i === this.#currentPage - 3 || i === this.#currentPage + 3) {
-                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                html += `<li class="page-item disabled mx-1"><span class="page-link border-0">...</span></li>`;
             }
         }
 
         html += `
-            <li class="page-item ${this.#currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${this.#currentPage + 1}">&raquo;</a>
+            <li class="page-item ${this.#currentPage === totalPages ? 'disabled' : ''} ms-4">
+                <a class="page-link rounded-circle border-0" href="#" data-page="${this.#currentPage + 1}">&raquo;</a>
             </li>
         `;
 

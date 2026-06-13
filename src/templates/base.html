@@ -45,9 +45,26 @@
                 <a href="{% url 'budgets:index' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-3 {% if active_page == 'budgets' %}active{% endif %}">
                     <i class="bi bi-wallet2 me-3"></i> Budgets
                 </a>
-                <a href="{% url 'transactions:uncategorize' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-3 {% if active_page == 'transactions' %}active{% endif %}">
-                    <i class="bi bi-wallet2 me-3"></i> Uncategorize Transactions
-                </a>
+                <!-- Transactions with Sub-items -->
+                <div class="list-group list-group-flush">
+                    <button class="list-group-item list-group-item-action border-0 rounded-3 py-3 d-flex justify-content-between align-items-center {% if active_page == 'transactions' %}active{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#transactionsSubmenu">
+                        <span><i class="bi bi-receipt me-3"></i> Transactions</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="collapse {% if active_page == 'transactions' %}show{% endif %}" id="transactionsSubmenu">
+                        <div class="list-group list-group-flush ms-4 gap-2">
+                            <a href="{% url 'transactions:index' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-2">
+                                <i class="bi bi-receipt me-3"></i> All Transactions
+                            </a>
+                            <a href="{% url 'transactions:import' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-2">
+                                <i class="bi bi-upload me-3"></i> Import
+                            </a>
+                            <a href="{% url 'transactions:uncategorize' %}" class="list-group-item list-group-item-action border-0 rounded-3 py-2">
+                                <i class="bi bi-tags me-3"></i> Uncategorize
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

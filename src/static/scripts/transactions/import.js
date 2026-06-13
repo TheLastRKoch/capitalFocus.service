@@ -149,7 +149,23 @@ class TransactionImportManager extends BaseManager {
         let row = [];
         let inQuotes = false;
 
-        const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+        // Handle BOM and normalize line endings
+        let cleanText = text.startsWith('\uFEFF') ? text.substring(1) : text;
+        const normalized = cleanText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
+        // Simple delimiter detection
+        const firstLine = normalized.split('\n')[0];
+        const delimiters = [",", ";", "\t", "|"];
+        let delimiter = ",";
+        let maxCount = -1;
+
+        delimiters.forEach(d => {
+            const count = firstLine.split(d).length;
+            if (count > maxCount) {
+                maxCount = count;
+                delimiter = d;
+            }
+        });
 
         for (let i = 0; i < normalized.length; i++) {
             const char = normalized[i];
@@ -168,7 +184,7 @@ class TransactionImportManager extends BaseManager {
             } else {
                 if (char === '"') {
                     inQuotes = true;
-                } else if (char === ",") {
+                } else if (char === delimiter) {
                     row.push(field);
                     field = "";
                 } else if (char === "\n") {
@@ -192,7 +208,7 @@ class TransactionImportManager extends BaseManager {
         if (filteredRows.length === 0) return { headers: [], rows: [] };
 
         return {
-            headers: filteredRows[0],
+            headers: filteredRows[0].map(h => h.trim()),
             rows: filteredRows.slice(1)
         };
     }
@@ -212,15 +228,13 @@ class TransactionImportManager extends BaseManager {
         }
 
         // Header
-        const trHead = document.createElement("tr");
-        trHead.innerHTML = `<th>#</th>` + this.#state.parsedData.headers.map(h => `<th>${Formatter.escapeHtml(h)}</th>`).join('');
-        this.#elements.tableHead.appendChild(trHead);
+        this.#elements.tableHead.innerHTML = `<th>#</th>` + this.#state.parsedData.headers.map(h => `<th>${Formatter.escapeHtml(h.trim())}</th>`).join('');
 
         // Body
         this.#state.parsedData.rows.forEach((r, idx) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td class="text-muted">${idx + 1}</td>` + 
-                this.#state.parsedData.headers.map((_, cIdx) => `<td>${Formatter.escapeHtml(r[cIdx] ?? '')}</td>`).join('');
+                this.#state.parsedData.headers.map((_, cIdx) => `<td>${Formatter.escapeHtml((r[cIdx] ?? '').trim())}</td>`).join('');
             this.#elements.tableBody.appendChild(tr);
         });
 

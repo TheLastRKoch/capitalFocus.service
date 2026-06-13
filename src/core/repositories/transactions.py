@@ -15,8 +15,9 @@ class TransactionsRepository(BaseRepository):
             category_name=models.F('subcategory__label'),
             budget_name=models.F('budgets__label')
         ).values(
-            'id', 'date', 'commerce', 'amount', 'status',
-            'category_name', 'budget_name'
+            'id', 'date', 'commerce', 'amount', 'location', 'card',
+            'authorization', 'reference', 'transactionType', 'status',
+            'category_name', 'budget_name', 'subcategory_id'
         ))
 
     def list_uncategorized(self) -> list:
