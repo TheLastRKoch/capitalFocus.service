@@ -1,14 +1,10 @@
-/**
- * Capital Focus - Global UI Logic
- * Handles global interactions like accordion behavior and basic UI state.
- */
+import { Formatter, NotificationService, BaseManager } from './app.js';
 
-import { Formatter, NotificationService } from './app.js';
-
-class GlobalManager {
+class GlobalManager extends BaseManager {
     #dateInputId = 'entryDate';
 
     constructor() {
+        super();
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.init());
         } else {
@@ -25,7 +21,6 @@ class GlobalManager {
     }
 
     #initAccordionChevrons() {
-        // Use event delegation for better performance and to handle dynamic content
         document.addEventListener('show.bs.collapse', (e) => {
             const toggle = document.querySelector(`[data-bs-target="#${e.target.id}"]`);
             if (toggle) toggle.classList.remove('collapsed');
@@ -67,9 +62,7 @@ class GlobalManager {
                 form.reset();
                 this.#setDefaultDate();
                 
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addEntryModal'));
-                modal?.hide();
-                
+                this.getModal(document.getElementById('addEntryModal'))?.hide();
                 NotificationService.show('Entry added successfully!', 'success');
             });
         }
@@ -88,8 +81,7 @@ class GlobalManager {
                 NotificationService.show(`Category "${name}" created!`, 'success');
                 
                 newForm.reset();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                modal?.hide();
+                this.getModal(document.getElementById('addCategoryModal'))?.hide();
             });
         }
     }
@@ -112,8 +104,7 @@ class GlobalManager {
                 NotificationService.show('Summary updated!', 'success');
                 
                 summaryForm.reset();
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editSummary'));
-                modal?.hide();
+                this.getModal(document.getElementById('editSummary'))?.hide();
             });
         }
     }
@@ -138,7 +129,8 @@ class GlobalManager {
         
         const collapse = categoryCard.querySelector('.collapse');
         if (collapse && !collapse.classList.contains('show')) {
-            new bootstrap.Collapse(collapse, { show: true });
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(collapse);
+            bsCollapse.show();
         }
     }
 

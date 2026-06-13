@@ -3,9 +3,9 @@
  * Handles dynamic fetching and rendering of budget categories and entries.
  */
 
-import { ApiService, Formatter, NotificationService } from '../app.js';
+import { ApiService, Formatter, NotificationService, BaseManager } from '../app.js';
 
-class BudgetDetailsManager {
+class BudgetDetailsManager extends BaseManager {
     #budgetId = null;
     #budget = null;
     #elements = {
@@ -21,6 +21,7 @@ class BudgetDetailsManager {
     };
 
     constructor() {
+        super();
         this.#budgetId = this.#getBudgetIdFromUrl();
         this.#setupEventListeners();
         this.init();
@@ -58,8 +59,7 @@ class BudgetDetailsManager {
 
             // Reset form and close modal
             this.#elements.addForm.reset();
-            const modalInstance = bootstrap.Modal.getInstance(this.#elements.addModal);
-            if (modalInstance) modalInstance.hide();
+            this.getModal(this.#elements.addModal)?.hide();
 
             // Refresh data
             await this.init();
@@ -76,7 +76,9 @@ class BudgetDetailsManager {
     }
 
     async init() {
-        this.#showLoader();
+        this.showLoader(this.#elements.loader);
+        if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+
         try {
             if (!this.#budgetId) {
                 await this.#fetchActiveBudget();
@@ -85,12 +87,12 @@ class BudgetDetailsManager {
             if (this.#budgetId) {
                 await this.#fetchBudgetDetails();
             } else {
-                this.#renderEmptyState('Please create a budget first.');
+                this.renderEmpty(this.#elements.accordion, 'Please create a budget first.');
             }
         } catch (error) {
-            this.#renderError('Failed to load budget details.');
+            this.renderError(this.#elements.accordion, 'Failed to load budget details.');
         } finally {
-            this.#hideLoader();
+            this.hideLoader(this.#elements.loader);
         }
     }
 
@@ -106,15 +108,6 @@ class BudgetDetailsManager {
         this.#render();
     }
 
-    #showLoader() {
-        this.#elements.loader?.classList.remove('d-none');
-        if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
-    }
-
-    #hideLoader() {
-        this.#elements.loader?.classList.add('d-none');
-    }
-
     #render() {
         const budget = this.#budget;
         if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
@@ -122,7 +115,7 @@ class BudgetDetailsManager {
         
         const sections = budget.sections || [];
         if (sections.length === 0) {
-            this.#renderEmptyState('No sections found for this budget.');
+            this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
             return;
         }
 
@@ -153,7 +146,7 @@ class BudgetDetailsManager {
                         <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
                             data-bs-toggle="collapse" data-bs-target="#${collapseId}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
-                            <span class="fw-medium">${section.label}</span>
+                            <span class="fw-medium">${Formatter.escapeHtml(section.label)}</span>
                             <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
                             <span class="ms-3 small fw-bold ${remaining < 0 ? 'text-danger' : 'text-success'}">
                                 Rem: ${Formatter.formatCurrency(remaining)}
@@ -194,19 +187,12 @@ class BudgetDetailsManager {
             </div>
         `;
     }
-
-    #renderEmptyState(message) {
-        if (this.#elements.accordion) {
-            this.#elements.accordion.innerHTML = `<div class="text-center py-4 text-muted">${message}</div>`;
-        }
-    }
-
-    #renderError(message) {
-        if (this.#elements.accordion) {
-            this.#elements.accordion.innerHTML = `<div class="text-center py-4 text-danger">${message}</div>`;
-        }
-    }
 }
+
+// Initialize manager on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    new BudgetDetailsManager();
+});
 
 // Initialize manager on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

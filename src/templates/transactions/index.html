@@ -1,106 +1,136 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard - Capital Focus{% endblock %}
+{% block title %}Transactions - Capital Focus{% endblock %}
 
-{% block content %}
-<!-- Summary card -->
-<div class="row mb-5 fade-in">
-    <div class="col-12 col-md-4">
-        <div class="card summary-card shadow-sm border-0" style="--cf-primary: #ffc107;">
-            <div class="card-body p-4">
-                <span class="summary-label">Pending Transactions</span>
-                <span class="summary-value text-warning">...</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Search Bar -->
-<div class="mb-5 fade-in" style="animation-delay: 0.1s;">
-    <div class="input-group shadow-sm rounded-4 overflow-hidden" style="max-width: 600px;">
-        <span class="input-group-text bg-white border-0 ps-4"><i class="bi bi-search text-muted"></i></span>
-        <input type="text" class="form-control border-0 py-3" placeholder="Search transactions...">
-    </div>
-</div>
-
-<!-- Transaction Cards -->
-<div class="row g-4 fade-in" id="transactionList" style="animation-delay: 0.2s;">
-    <div class="col-12 text-center py-5">
-        <div class="spinner-grow text-primary" role="status">
-            <span class="visually-hidden">Loading transactions...</span>
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    .table-wrapper {
+        max-height: 65vh;
+        overflow: auto;
+    }
+    .table-wrapper thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+        border-bottom: 2px solid #dee2e6;
+    }
+    .sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+    .sortable .sort-indicator {
+        opacity: 0.3;
+        font-size: 0.8rem;
+        margin-left: 0.5rem;
+    }
+    .sortable.active .sort-indicator {
+        opacity: 1;
+        color: var(--cf-primary);
+    }
+    .filter-row td {
+        padding: 0.5rem;
+        background-color: #f1f3f5;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .filter-row input {
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+</style>
 {% endblock %}
 
-{% block modals %}
-<!-- Transaction Categorization Modal -->
-<div class="modal fade" id="transactionModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 px-4 pt-4">
-                <h5 class="modal-title fw-bold">Categorize Transaction</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="transactionForm" class="form-scroll">
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">Commerce</label>
-                        <input type="text" class="form-control bg-light border-0" id="modalCommerce" readonly tabindex="-1">
-                    </div>
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <label class="form-label text-muted small fw-bold">Date</label>
-                            <input type="text" class="form-control bg-light border-0" id="modalDate" readonly tabindex="-1">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted small fw-bold">Amount</label>
-                            <input type="text" class="form-control bg-light border-0" id="modalAmount" readonly tabindex="-1">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="budgetSelect" class="form-label fw-bold">Target Budget</label>
-                        <select class="form-select border-0 bg-light" id="budgetSelect" required>
-                            <option value="" selected disabled>Select a budget...</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label for="categorySelect" class="form-label fw-bold">Category</label>
-                        <select class="form-select border-0 bg-light" id="categorySelect" required>
-                            <option value="" selected disabled>Select a category...</option>
-                        </select>
-                    </div>
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-5 fade-in">
+    <a href="{% url 'budgets:index' %}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
+        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+        <i class="bi bi-arrow-left fs-5"></i>
+    </a>
+    <div>
+        <h2 class="fw-bold mb-0">Transactions</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'budgets:index' %}"
+                        class="text-decoration-none text-muted">Budgets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Transactions</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="ms-auto d-flex gap-2">
+        <button id="downloadBtn" class="btn btn-white border shadow-sm rounded-pill px-4" type="button" disabled>
+            <i class="bi bi-download me-2"></i> Export CSV
+        </button>
+        <button id="resetBtn" class="btn btn-white border shadow-sm rounded-pill px-4" type="button">
+            <i class="bi bi-arrow-counterclockwise me-2"></i> Reset
+        </button>
+    </div>
+</div>
 
-                    <div id="additionalDetails" class="d-none bg-light p-3 rounded-3 mb-3">
-                        <div class="mb-2">
-                            <label class="form-label text-muted small fw-bold mb-0">Location</label>
-                            <p id="modalLocation" class="mb-0 small"></p>
-                        </div>
-                        <div>
-                            <label class="form-label text-muted small fw-bold mb-0">Card Detail</label>
-                            <p id="modalCard" class="mb-0 small"></p>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-primary fw-bold" id="toggleDetails">Show More Details</button>
-                </form>
-            </div>
-            <div class="modal-footer border-0 p-4 pt-0 justify-content-between">
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-light rounded-circle shadow-sm" id="prevButton"><i class="bi bi-chevron-left"></i></button>
-                    <button type="button" class="btn btn-light rounded-circle shadow-sm" id="nextButton"><i class="bi bi-chevron-right"></i></button>
-                </div>
-                <div>
-                    <button type="button" class="btn btn-outline-danger border-0 rounded-pill px-3 me-2" id="deleteButton">Delete</button>
-                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="saveButton">Categorize</button>
+<!-- Search & Summary -->
+<div class="row g-4 mb-4 fade-in" style="animation-delay: 0.1s;">
+    <div class="col-12 col-md-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100 d-flex align-items-center justify-content-center">
+            <div class="card-body w-100 p-2">
+                <div class="input-group input-group-lg border-0">
+                    <span class="input-group-text bg-transparent border-0 px-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input id="searchInput" type="search" class="form-control border-0 shadow-none ps-0" 
+                        placeholder="Search all columns..." aria-label="Search transactions">
+                    <button id="toggleFiltersBtn" class="btn btn-light rounded-pill px-4 me-2 my-auto h-75 d-flex align-items-center" type="button">
+                        <i class="bi bi-filter me-2"></i> Filters
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+    <div class="col-12 col-md-4">
+        <div class="card summary-card shadow-sm h-100 border-0">
+            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                <span class="summary-label">Filtered Results</span>
+                <span id="resultInfo" class="summary-value text-primary fs-5">0 transactions</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div id="tableContainer" class="card border-0 shadow-sm rounded-4 fade-in mb-5" style="animation-delay: 0.2s;">
+    <div class="table-wrapper rounded-4">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light">
+                <tr id="tableHead" class="border-0">
+                    <!-- Injected by JS -->
+                </tr>
+                <tr id="filterRow" class="filter-row d-none">
+                    <!-- Injected by JS -->
+                </tr>
+            </thead>
+            <tbody id="tableBody" class="border-top-0">
+                <!-- Injected by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Empty State -->
+<div id="emptyState" class="text-center py-5 fade-in d-none" style="animation-delay: 0.3s;">
+    <div class="mb-4">
+        <div class="bg-white shadow-sm rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-search fs-2 text-muted opacity-50"></i>
+        </div>
+    </div>
+    <h5 class="fw-bold">No matching transactions</h5>
+    <p class="text-muted">Try adjusting your search or filters to find what you're looking for.</p>
+    <button class="btn btn-outline-primary rounded-pill px-4 mt-2" onclick="document.getElementById('resetBtn').click()">
+        Clear all filters
+    </button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'scripts/transactions/uncategorize.js' %}"></script>
+<script src="{% static 'scripts/transactions/index.js' %}"></script>
 {% endblock %}

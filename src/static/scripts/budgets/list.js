@@ -3,9 +3,9 @@
  * Handles dynamic fetching and rendering of budgets.
  */
 
-import { ApiService, Formatter, NotificationService } from '../app.js';
+import { ApiService, Formatter, NotificationService, BaseManager } from '../app.js';
 
-class BudgetManager {
+class BudgetManager extends BaseManager {
     #elements = {
         activeList: document.getElementById('activeBudgetsList'),
         inactiveList: document.getElementById('inactiveBudgetsList'),
@@ -22,6 +22,7 @@ class BudgetManager {
     };
 
     constructor() {
+        super();
         this.init();
     }
 
@@ -32,7 +33,7 @@ class BudgetManager {
             this.#updateSummary();
             this.#setupEventListeners();
         } catch (error) {
-            this.#renderError('Failed to load budgets.');
+            this.renderError(this.#elements.activeList, 'Failed to load budgets.');
         }
     }
 
@@ -82,8 +83,7 @@ class BudgetManager {
             
             // Reset form and close modal
             this.#elements.addForm.reset();
-            const modalInstance = bootstrap.Modal.getInstance(this.#elements.addModal);
-            if (modalInstance) modalInstance.hide();
+            this.getModal(this.#elements.addModal)?.hide();
 
             // Refresh data
             await this.init();
@@ -132,7 +132,7 @@ class BudgetManager {
                 <div class="card h-100 border-0 shadow-sm budget-card ${opacityClass} fade-in">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h6 class="fw-bold mb-0">${label || 'Unnamed Budget'}</h6>
+                            <h6 class="fw-bold mb-0">${Formatter.escapeHtml(label || 'Unnamed Budget')}</h6>
                             ${statusBadge}
                         </div>
                         <div class="text-muted small mb-3">
@@ -157,12 +157,6 @@ class BudgetManager {
                 </div>
             </div>
         `;
-    }
-
-    #renderError(message) {
-        const errorHtml = `<div class="col-12 text-center py-5 text-danger">${message}</div>`;
-        if (this.#elements.activeList) this.#elements.activeList.innerHTML = errorHtml;
-        if (this.#elements.inactiveList) this.#elements.inactiveList.innerHTML = errorHtml;
     }
 }
 

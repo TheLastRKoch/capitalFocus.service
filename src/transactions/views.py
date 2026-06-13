@@ -4,23 +4,27 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.transactions import TransactionsRepository
+from core.services.transactions import TransactionService
 
 # Dependency Setup
 transactions_repo = TransactionsRepository()
+transactions_service = TransactionService(transactions_repo)
 
 # --- Template Views ---
 
 
 def index(request):
     """Render all transactions"""
-    return render(request, 'transactions/index.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/index.html', {'active_page': 'transactions'})
 
 
 def uncategorize(request):
     """Render the uncategorized transactions page."""
-    return render(request, 'transactions/uncategorize.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/uncategorize.html', {'active_page': 'transactions'})
+
+
+def import_transactions(request):
+    return render(request, 'transactions/import.html', {'active_page': 'transactions'})
 
 
 # --- API Views ---
@@ -29,6 +33,10 @@ def uncategorize(request):
 def api_list(request):
     if request.method == 'GET':
         return JsonResponse(transactions_repo.all(), safe=False)
+    elif request.method == 'POST':
+        payload = json.loads(request.body)
+        transactions_service.add_list(payload)
+        return JsonResponse({'message': 'Transactions added succesfully'}, safe=False)
     return HttpResponse(status=405)
 
 

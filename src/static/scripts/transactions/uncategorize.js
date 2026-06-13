@@ -3,9 +3,9 @@
  * Handles dynamic fetching and rendering of uncategorized transactions.
  */
 
-import { ApiService, Formatter, NotificationService } from '../app.js';
+import { ApiService, Formatter, NotificationService, BaseManager } from '../app.js';
 
-class TransactionManager {
+class TransactionManager extends BaseManager {
     #elements = {
         list: document.getElementById('transactionList'),
         modal: document.getElementById('transactionModal'),
@@ -20,7 +20,8 @@ class TransactionManager {
     #currentId = null;
 
     constructor() {
-        this.#bsModal = new bootstrap.Modal(this.#elements.modal);
+        super();
+        this.#bsModal = this.getModal(this.#elements.modal);
         this.#setupEventListeners();
         this.init();
     }
@@ -46,7 +47,7 @@ class TransactionManager {
             this.#transactions = data || [];
             this.#render();
         } catch (error) {
-            this.#renderError('Failed to load transactions.');
+            this.renderError(this.#elements.list, 'Failed to load transactions.');
         }
     }
 
@@ -58,11 +59,7 @@ class TransactionManager {
 
     #render() {
         if (this.#transactions.length === 0) {
-            this.#elements.list.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <p class="text-muted">No pending transactions found.</p>
-                </div>
-            `;
+            this.renderEmpty(this.#elements.list, 'No pending transactions found.');
             return;
         }
 
@@ -115,7 +112,7 @@ class TransactionManager {
         this.#elements.detailsArea.classList.add('d-none');
         this.#elements.toggleDetailsBtn.textContent = 'Show More Details';
 
-        this.#bsModal.show();
+        this.#bsModal?.show();
     }
 
     async #handleSave() {
@@ -136,21 +133,12 @@ class TransactionManager {
                 body: JSON.stringify(data)
             });
 
-            this.#bsModal.hide();
+            this.#bsModal?.hide();
             NotificationService.show('Transaction categorized!', 'success');
             await this.init();
         } catch (error) {
             NotificationService.show('Failed to save transaction', 'danger');
         }
-    }
-
-    #renderError(message) {
-        this.#elements.list.innerHTML = `
-            <div class="col-12 text-center py-5">
-                <p class="text-danger">${message}</p>
-                <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="location.reload()">Retry</button>
-            </div>
-        `;
     }
 }
 
