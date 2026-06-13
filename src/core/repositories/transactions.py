@@ -15,13 +15,25 @@ class TransactionsRepository(BaseRepository):
     def get_by_budget_id(self, budget_id: str) -> list:
         """Get transactions linked to a specific budget with related fields."""
         return list(
-            self.model.objects.filter(budgets_id=budget_id).values(
-                'id', 'date', 'commerce', 'amount', 'location', 'card',
-                'status', 'subcategory_id', 'subcategory__parent_id'))
+            self.model.objects.filter(budgets_id=budget_id).values('id', 'date', 'commerce', 'amount', 'location',
+                                                                   'card', 'status', 'subcategory_id',
+                                                                   'subcategory__parent_id'))
 
-    def add(self, date, commerce, amount, location, card, authorization,
-            reference, transactionType, subcategory, status, json, html,
-            budgets):
+    def add(self,
+            date,
+            commerce,
+            amount,
+            location,
+            card,
+            authorization,
+            reference,
+            transactionType,
+            subcategory,
+            status,
+            budget,
+            json=None,
+            html=None):
+
         new_transaction = TransactionsModel.objects.create(
             date=date,
             commerce=commerce,
@@ -35,7 +47,7 @@ class TransactionsRepository(BaseRepository):
             status=status,
             json=json,
             html=html,
-            budgets=budgets,
+            budget=budget,
         )
         new_transaction.save()
         return new_transaction

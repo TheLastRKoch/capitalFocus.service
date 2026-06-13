@@ -1,4 +1,7 @@
+from datetime import datetime
 from core.repositories.transactions import TransactionsRepository
+from categories.models import SubcategoriesModel
+from budgets.models import BudgetsModel
 
 
 class TransactionService:
@@ -6,39 +9,21 @@ class TransactionService:
     def __init__(self, transactions_repo: TransactionsRepository) -> None:
         self.transactions_repo = transactions_repo
 
-    def add(self, date, commerce, amount, location, card, authorization,
-            reference, transactionType, subcategory, status, json, html,
-            budgets, created_at, updated_at):
-        return self.transactions_repo.add(
-            date=date,
-            commerce=commerce,
-            amount=amount,
-            location=location,
-            card=card,
-            authorization=authorization,
-            reference=reference,
-            transactionType=transactionType,
-            subcategory=subcategory,
-            status=status,
-            json=json,
-            html=html,
-            budgets=budgets,
-        )
-
-    def add_list(transactions):
+    def add_list(self, transactions):
         for transaction in transactions:
-            self.add(
-                date=date,
-                commerce=commerce,
-                amount=amount,
-                location=location,
-                card=card,
-                authorization=authorization,
-                reference=reference,
-                transactionType=transactionType,
-                subcategory=subcategory,
-                status=status,
-                json=json,
-                html=html,
-                budgets=budgets,
-            )
+
+            formated_date = datetime.strptime(transaction.get('date'), "%Y-%m-%d %H:%M:%S")
+            subcategory = SubcategoriesModel.objects.get(id=transaction.get('subcategory'))
+            budget = BudgetsModel.objects.get(id=transaction.get('budget'))
+
+            self.transactions_repo.add(date=formated_date,
+                                       commerce=transaction.get('commerce'),
+                                       amount=transaction.get('amount'),
+                                       location=transaction.get('location'),
+                                       card=transaction.get('card'),
+                                       authorization=transaction.get('authorization'),
+                                       reference=transaction.get('reference'),
+                                       transactionType=transaction.get('transactionType'),
+                                       status=transaction.get('status'),
+                                       subcategory=subcategory,
+                                       budget=budget)
