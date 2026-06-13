@@ -20,6 +20,7 @@ from django.shortcuts import redirect
 from budgets import views as budget_views
 from transactions import views as transaction_views
 from categories import views as categories_views
+from sections import views as sections_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -52,7 +53,8 @@ urlpatterns = [
     path(
         'api/subcategory/',
         include([
-            path('<str:id>/', categories_views.api_get_subcategory_by_id,
+            path('<str:id>/',
+                 categories_views.api_get_subcategory_by_id,
                  name='api_get_subcategory_by_id'),
         ])),
     path(
@@ -69,4 +71,11 @@ urlpatterns = [
                  transaction_views.api_details,
                  name='api_details'),
         ])),
+    path(
+        'api/sections/',
+        include([
+            path('<str:section_id>',
+                 sections_views.api_update_section,
+                 name='api_update_section')
+        ]))
 ]

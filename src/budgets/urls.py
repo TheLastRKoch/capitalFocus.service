@@ -16,5 +16,5 @@ urlpatterns = [
          name='api_get_by_id_complete'),
     path('api/<str:id>/sections/',
          views.api_create_section,
-         name='api_create_section'),
+         name='api_create_section')
 ]

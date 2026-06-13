@@ -20,15 +20,26 @@ class BudgetService:
 
     def get_section_transactions(self, budget_id: str) -> list:
         """Retrieve sections with their associated transactions for a given budget."""
+
         section_transactions = []
         transactions = self.transactions_repo.get_by_budget_id(budget_id)
         sections = self.sections_repo.get_by_budget_id(budget_id)
 
         for section in sections:
-            section['transactions'] = [
-                transaction for transaction in transactions
-                if transaction.get('subcategory__parent_id') == section.get('category_id')
+            section_txns = [
+                transaction for transaction in transactions if transaction.get(
+                    'subcategory__parent_id') == section.get('category_id')
             ]
+
+            # Calculate remaining: projection - sum of all transactions in this section
+            total_spent = sum(t.get('amount', 0) for t in section_txns)
+            projection = section.get('projection') or 0
+            remaining = projection - total_spent
+
+            section['transactions'] = section_txns
+            section['total_spent'] = total_spent
+            section['remaining'] = remaining
+
             section_transactions.append(section)
 
         return section_transactions
