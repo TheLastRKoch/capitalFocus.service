@@ -23,6 +23,8 @@ class TransactionsListManager extends BaseManager {
 
     #transactions = [];
     #filteredTransactions = [];
+    #budgetCache = new Map();
+    #subcategoryCache = new Map();
     #currentPage = 1;
     #pageSize = 50;
     #filters = {};
@@ -48,7 +50,10 @@ class TransactionsListManager extends BaseManager {
         try {
             this.#renderSkeleton();
             const data = await ApiService.fetchJson('/api/transactions/');
-            this.#transactions = data || [];
+            this.#transactions = data.results || [];
+            
+            await this.#enrichTransactions();
+            
             this.#filteredTransactions = [...this.#transactions];
             this.#renderHeader();
             this.#renderFilters();
@@ -57,6 +62,35 @@ class TransactionsListManager extends BaseManager {
             console.error('Failed to initialize transactions list:', error);
             this.renderError(this.#elements.tableBody, 'Failed to load transactions.');
         }
+    }
+
+    async #enrichTransactions() {
+        const budgetIds = [...new Set(this.#transactions.map(t => t.budgets_id).filter(id => id && !this.#budgetCache.has(id)))];
+        const subcategoryIds = [...new Set(this.#transactions.map(t => t.subcategory_id).filter(id => id && !this.#subcategoryCache.has(id)))];
+
+        await Promise.all([
+            ...budgetIds.map(async id => {
+                try {
+                    const data = await ApiService.fetchJson(`/api/budgets/${id}/`);
+                    this.#budgetCache.set(id, data.label || 'N/A');
+                } catch (e) {
+                    this.#budgetCache.set(id, 'N/A');
+                }
+            }),
+            ...subcategoryIds.map(async id => {
+                try {
+                    const data = await ApiService.fetchJson(`/api/subcategory/${id}/`);
+                    this.#subcategoryCache.set(id, data.label || 'N/A');
+                } catch (e) {
+                    this.#subcategoryCache.set(id, 'N/A');
+                }
+            })
+        ]);
+
+        this.#transactions.forEach(t => {
+            t.budget_name = this.#budgetCache.get(t.budgets_id) || 'N/A';
+            t.category_name = this.#subcategoryCache.get(t.subcategory_id) || 'Uncategorized';
+        });
     }
 
     #setupEventListeners() {
