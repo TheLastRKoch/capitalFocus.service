@@ -1,5 +1,6 @@
 import json
 import csv
+from datetime import datetime
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -101,23 +102,41 @@ def api_list(request):
 
 
 def api_export_csv(request):
-    """Export all transactions to CSV."""
+    """Export all transactions to CSV with all columns."""
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="transactions_export.csv"'
 
     writer = csv.writer(response)
-    # Header
-    writer.writerow(['Commerce', 'Date', 'Amount', 'Category', 'Budget', 'Status'])
+    # Header with all columns
+    writer.writerow([
+        'date', 'commerce', 'amount', 'location', 'card', 'authorization',
+        'reference', 'transactionType', 'subcategory', 'status', 'budget'
+    ])
 
     transactions = transactions_repo.all()
     for t in transactions:
+        # Format the date to remove timezone information
+        date_value = t.get('date')
+        if date_value:
+            if isinstance(date_value, str):
+                # Remove timezone offset if present (e.g., "2026-06-13 13:40:03+00:00" -> "2026-06-13 13:40:03")
+                date_value = date_value.split('+')[0].split('Z')[0]
+            else:
+                # If it's a datetime object, format it
+                date_value = date_value.strftime('%Y-%m-%d %H:%M:%S')
+        
         writer.writerow([
+            date_value,
             t.get('commerce'),
-            t.get('date'),
             t.get('amount'),
+            t.get('location') or '',
+            t.get('card') or '',
+            t.get('authorization') or '',
+            t.get('reference') or '',
+            t.get('transactionType') or '',
             t.get('category_name') or 'Uncategorized',
-            t.get('budget_name') or 'N/A',
-            t.get('status')
+            t.get('status'),
+            t.get('budget_name') or 'N/A'
         ])
 
     return response
