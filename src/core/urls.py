@@ -59,6 +59,9 @@ urlpatterns = [
         'api/transactions/',
         include([
             path('', transaction_views.api_list, name='api_index'),
+            path('export/',
+                 transaction_views.api_export_csv,
+                 name='api_export_csv'),
             path('uncategorize/',
                  transaction_views.api_uncategorize,
                  name='api_uncategorize'),

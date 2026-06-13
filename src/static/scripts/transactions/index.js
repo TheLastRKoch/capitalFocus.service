@@ -118,6 +118,10 @@ class TransactionsListManager extends BaseManager {
             this.#renderFilters(); // Reset filter inputs
         });
 
+        this.#elements.downloadBtn?.addEventListener('click', () => {
+            window.location.href = '/api/transactions/export/';
+        });
+
         this.#elements.tableHead?.addEventListener('click', (e) => {
             const th = e.target.closest('.sortable');
             if (th) {
@@ -230,6 +234,11 @@ class TransactionsListManager extends BaseManager {
         }
 
         this.#elements.resultInfo.textContent = `${this.#filteredTransactions.length} transactions`;
+        
+        if (this.#elements.downloadBtn) {
+            this.#elements.downloadBtn.disabled = this.#filteredTransactions.length === 0;
+        }
+
         this.#renderPagination();
         this.#renderHeader(); // Refresh sort indicators
     }
@@ -259,26 +268,26 @@ class TransactionsListManager extends BaseManager {
         }
 
         let html = `
-            <li class="page-item ${this.#currentPage === 1 ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${this.#currentPage - 1}">&laquo;</a>
+            <li class="page-item ${this.#currentPage === 1 ? 'disabled' : ''} me-2">
+                <a class="page-link rounded-circle border-0" href="#" data-page="${this.#currentPage - 1}">&laquo;</a>
             </li>
         `;
 
         for (let i = 1; i <= totalPages; i++) {
             if (i === 1 || i === totalPages || (i >= this.#currentPage - 2 && i <= this.#currentPage + 2)) {
                 html += `
-                    <li class="page-item ${this.#currentPage === i ? 'active' : ''}">
-                        <a class="page-link" href="#" data-page="${i}">${i}</a>
+                    <li class="page-item ${this.#currentPage === i ? 'active' : ''} mx-1">
+                        <a class="page-link rounded-circle border-0" href="#" data-page="${i}">${i}</a>
                     </li>
                 `;
             } else if (i === this.#currentPage - 3 || i === this.#currentPage + 3) {
-                html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                html += `<li class="page-item disabled mx-1"><span class="page-link border-0">...</span></li>`;
             }
         }
 
         html += `
-            <li class="page-item ${this.#currentPage === totalPages ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${this.#currentPage + 1}">&raquo;</a>
+            <li class="page-item ${this.#currentPage === totalPages ? 'disabled' : ''} ms-2">
+                <a class="page-link rounded-circle border-0" href="#" data-page="${this.#currentPage + 1}">&raquo;</a>
             </li>
         `;
 

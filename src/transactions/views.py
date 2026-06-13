@@ -1,4 +1,5 @@
 import json
+import csv
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -97,6 +98,29 @@ def api_list(request):
             return JsonResponse({'error': str(e)}, status=400)
 
     return HttpResponse(status=405)
+
+
+def api_export_csv(request):
+    """Export all transactions to CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="transactions_export.csv"'
+
+    writer = csv.writer(response)
+    # Header
+    writer.writerow(['Commerce', 'Date', 'Amount', 'Category', 'Budget', 'Status'])
+
+    transactions = transactions_repo.all()
+    for t in transactions:
+        writer.writerow([
+            t.get('commerce'),
+            t.get('date'),
+            t.get('amount'),
+            t.get('category_name') or 'Uncategorized',
+            t.get('budget_name') or 'N/A',
+            t.get('status')
+        ])
+
+    return response
 
 
 def api_uncategorize(request):
