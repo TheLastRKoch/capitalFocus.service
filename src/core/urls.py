@@ -19,6 +19,7 @@ from django.urls import path, include
 from django.shortcuts import redirect
 from budgets import views as budget_views
 from transactions import views as transaction_views
+from categories import views as categories_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -47,6 +48,12 @@ urlpatterns = [
             path('<str:id>/sections/',
                  budget_views.api_create_section,
                  name='api_create_section'),
+        ])),
+    path(
+        'api/subcategory/',
+        include([
+            path('<str:id>/', categories_views.api_get_subcategory_by_id,
+                 name='api_get_subcategory_by_id'),
         ])),
     path(
         'api/transactions/',
