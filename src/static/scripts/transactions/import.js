@@ -192,7 +192,7 @@ class TransactionImportManager extends BaseManager {
         if (filteredRows.length === 0) return { headers: [], rows: [] };
 
         return {
-            headers: filteredRows[0],
+            headers: filteredRows[0].map(h => h.trim()),
             rows: filteredRows.slice(1)
         };
     }
@@ -212,15 +212,13 @@ class TransactionImportManager extends BaseManager {
         }
 
         // Header
-        const trHead = document.createElement("tr");
-        trHead.innerHTML = `<th>#</th>` + this.#state.parsedData.headers.map(h => `<th>${Formatter.escapeHtml(h)}</th>`).join('');
-        this.#elements.tableHead.appendChild(trHead);
+        this.#elements.tableHead.innerHTML = `<th>#</th>` + this.#state.parsedData.headers.map(h => `<th>${Formatter.escapeHtml(h.trim())}</th>`).join('');
 
         // Body
         this.#state.parsedData.rows.forEach((r, idx) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `<td class="text-muted">${idx + 1}</td>` + 
-                this.#state.parsedData.headers.map((_, cIdx) => `<td>${Formatter.escapeHtml(r[cIdx] ?? '')}</td>`).join('');
+                this.#state.parsedData.headers.map((_, cIdx) => `<td>${Formatter.escapeHtml((r[cIdx] ?? '').trim())}</td>`).join('');
             this.#elements.tableBody.appendChild(tr);
         });
 

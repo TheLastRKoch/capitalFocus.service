@@ -4,6 +4,8 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from core.repositories.transactions import TransactionsRepository
+from budgets.models import BudgetsModel
+from categories.models import SubcategoriesModel
 
 # Dependency Setup
 transactions_repo = TransactionsRepository()
@@ -54,14 +56,35 @@ def api_list(request):
             # Also include the _id versions of foreign keys
             valid_fields.update({f.name + '_id' for f in transactions_repo.model._meta.get_fields() if f.is_relation and not f.auto_created})
 
+            # Cache for label to ID resolution to avoid excessive DB queries
+            budget_cache = {}
+            subcategory_cache = {}
+
             results = []
             for item in data:
                 # Map 'budget' to 'budgets_id' if provided
                 if 'budget' in item:
-                    item['budgets_id'] = item.pop('budget')
+                    val = item.pop('budget')
+                    if val:
+                        if isinstance(val, str) and not str(val).isdigit():
+                            if val not in budget_cache:
+                                b = BudgetsModel.objects.filter(label__iexact=val).first()
+                                budget_cache[val] = b.id if b else None
+                            item['budgets_id'] = budget_cache[val]
+                        else:
+                            item['budgets_id'] = val
+                
                 # Map 'subcategory' to 'subcategory_id' if provided
                 if 'subcategory' in item:
-                    item['subcategory_id'] = item.pop('subcategory')
+                    val = item.pop('subcategory')
+                    if val:
+                        if isinstance(val, str) and not str(val).isdigit():
+                            if val not in subcategory_cache:
+                                s = SubcategoriesModel.objects.filter(label__iexact=val).first()
+                                subcategory_cache[val] = s.id if s else None
+                            item['subcategory_id'] = subcategory_cache[val]
+                        else:
+                            item['subcategory_id'] = val
 
                 # Filter item to only include valid fields
                 filtered_item = {k: v for k, v in item.items() if k in valid_fields}
