@@ -1,0 +1,36 @@
+services:
+  service:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    ports:
+      - "9003:8080"
+    env_file:
+      - ../.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=core.settings
+      - DEBUG=1
+    volumes:
+      - ../src:/app/src
+    networks:
+      - rk-lan
+
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: capitalfocus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rk-lan
+
+volumes:
+  postgres_data:
+
+networks:
+  rk-lan:
