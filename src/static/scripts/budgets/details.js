@@ -159,8 +159,13 @@ class BudgetDetailsManager extends BaseManager {
          }
      }
 
-    #updateOverview() {
-        const totalSectionProjection = (this.#budget.sections || []).reduce((acc, sec) => acc + (sec.projection || 0), 0);
+    #updateOverview() {        
+        let totalSectionProjection  = 0
+        this.#budget.sections.forEach(function(section){
+            totalSectionProjection += parseFloat(section.projection)
+        })
+        
+
         if (this.#elements.remaining) {
             const available = (this.#budget.projection || 0) - totalSectionProjection;
             this.#elements.remaining.textContent = Formatter.formatCurrency(available);
