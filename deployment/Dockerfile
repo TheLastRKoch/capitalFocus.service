@@ -7,6 +7,10 @@ WORKDIR /app
 # Copy the requirements file into the container
 COPY requirements.txt .
 
+run apk update
+
+run apk add libpq-dev gcc
+
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -20,4 +24,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 8080
 
 # Run the application
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+CMD ["sh", "entrypoint.sh"]
