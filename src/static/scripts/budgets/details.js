@@ -159,12 +159,10 @@ class BudgetDetailsManager extends BaseManager {
          }
      }
 
-    #updateOverview() {        
-        let totalSectionProjection  = 0
-        this.#budget.sections.forEach(function(section){
-            totalSectionProjection += parseFloat(section.projection)
-        })
-        
+    #updateOverview() {
+        const totalSectionProjection = this.#budget.sections.reduce((acc, section) => {
+            return acc + (parseFloat(section.projection) || 0);
+        }, 0);
 
         if (this.#elements.remaining) {
             const available = (this.#budget.projection || 0) - totalSectionProjection;
@@ -238,7 +236,3 @@ document.addEventListener('DOMContentLoaded', () => {
     new BudgetDetailsManager();
 });
 
-// Initialize manager on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    new BudgetDetailsManager();
-});

@@ -72,13 +72,12 @@ def api_get_by_id(request, id):
 def api_get_by_id_complete(request, id):
     """API endpoint for retrieving a complete budget with sections and transactions."""
     if request.method == 'GET':
-        budget = budgets_repo.get_by_id(id)
+        budget = budget_service.get_complete_budget(id)
         if not budget:
             return HttpResponse(status=404)
-        sections = budget_service.get_section_transactions(id)
-        budget['sections'] = sections
         return JsonResponse(budget, safe=False)
     return HttpResponse(status=405)
+
 
 
 @csrf_exempt

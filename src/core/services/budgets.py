@@ -59,3 +59,14 @@ class BudgetService:
         """Create a new section record linked to a budget."""
         section_data['budgets_id'] = budget_id
         return self.sections_repo.create(section_data)
+
+    def get_complete_budget(self, budget_id: str) -> dict:
+        """Retrieve a complete budget with sections and transactions."""
+        budget = self.budgets_repo.get_by_id(budget_id)
+        if not budget:
+            return None
+
+        sections = self.get_section_transactions(budget_id)
+        budget['sections'] = sections
+        return budget
+
