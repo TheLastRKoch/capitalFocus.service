@@ -17,18 +17,16 @@ transactions_repo = TransactionsRepository()
 
 def index(request):
     """Render all transactions"""
-    return render(request, 'transactions/index.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/index.html', {'active_page': 'transactions'})
 
 
 def uncategorize(request):
     """Render the uncategorized transactions page."""
-    return render(request, 'transactions/uncategorize.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/uncategorize.html', {'active_page': 'transactions'})
+
 
 def import_transactions(request):
-    return render(request, 'transactions/import.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/import.html', {'active_page': 'transactions'})
 
 
 # --- API Views ---
@@ -56,7 +54,11 @@ def api_list(request):
             # Get valid field names for the model
             valid_fields = {f.name for f in transactions_repo.model._meta.get_fields() if not f.auto_created}
             # Also include the _id versions of foreign keys
-            valid_fields.update({f.name + '_id' for f in transactions_repo.model._meta.get_fields() if f.is_relation and not f.auto_created})
+            valid_fields.update({
+                f.name + '_id'
+                for f in transactions_repo.model._meta.get_fields()
+                if f.is_relation and not f.auto_created
+            })
 
             # Cache for label to ID resolution to avoid excessive DB queries
             budget_cache = {}
@@ -64,6 +66,11 @@ def api_list(request):
 
             results = []
             for item in data:
+                if 'date' in item:
+                    val = item.pop('date')
+                    if val:
+                        item['date'] = datetime.strptime(val, "%Y/%m/%d %H:%M:%S")
+
                 # Map 'budget' to 'budgets_id' if provided
                 if 'budget' in item:
                     val = item.pop('budget')
@@ -75,7 +82,7 @@ def api_list(request):
                             item['budgets_id'] = budget_cache[val]
                         else:
                             item['budgets_id'] = val
-                
+
                 # Map 'subcategory' to 'subcategory_id' if provided
                 if 'subcategory' in item:
                     val = item.pop('subcategory')
@@ -90,7 +97,7 @@ def api_list(request):
 
                 # Filter item to only include valid fields
                 filtered_item = {k: v for k, v in item.items() if k in valid_fields}
-                
+
                 if filtered_item:
                     results.append(transactions_repo.create(filtered_item))
 
@@ -109,8 +116,8 @@ def api_export_csv(request):
     writer = csv.writer(response)
     # Header with all columns
     writer.writerow([
-        'date', 'commerce', 'amount', 'location', 'card', 'authorization',
-        'reference', 'transactionType', 'subcategory', 'status', 'budget'
+        'date', 'commerce', 'amount', 'location', 'card', 'authorization', 'reference', 'transactionType',
+        'subcategory', 'status', 'budget'
     ])
 
     transactions = transactions_repo.all()
@@ -124,7 +131,7 @@ def api_export_csv(request):
             else:
                 # If it's a datetime object, format it
                 date_value = date_value.strftime('%Y-%m-%d %H:%M:%S')
-        
+
         writer.writerow([
             date_value,
             t.get('commerce'),
@@ -145,6 +152,12 @@ def api_export_csv(request):
 def api_uncategorize(request):
     if request.method == 'GET':
         return JsonResponse(transactions_repo.list_uncategorized(), safe=False)
+    return HttpResponse(status=405)
+
+
+def api_list_missing_sections(request, id):
+    if request.method == 'GET':
+        return JsonResponse(transactions_repo.list_missing_sections(id), safe=False)
     return HttpResponse(status=405)
 
 
