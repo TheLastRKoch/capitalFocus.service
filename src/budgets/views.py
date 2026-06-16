@@ -15,8 +15,7 @@ transactions_repo = TransactionsRepository()
 categories_repo = CategoriesRepository()
 subcategories_repo = SubcategoriesRepository()
 
-budget_service = BudgetService(budgets_repo, sections_repo, transactions_repo,
-                               categories_repo, subcategories_repo)
+budget_service = BudgetService(budgets_repo, sections_repo, transactions_repo, categories_repo, subcategories_repo)
 
 # --- Template Views ---
 
@@ -28,10 +27,7 @@ def index(request):
 
 def details(request, id):
     """Render the details page for a specific budget."""
-    return render(request, 'budgets/details.html', {
-        'active_page': 'budgets',
-        'budget_id': id
-    })
+    return render(request, 'budgets/details.html', {'active_page': 'budgets', 'budget_id': id})
 
 
 # --- API Views ---
@@ -45,6 +41,17 @@ def api_index(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         return JsonResponse(budget_service.create_budget(data), status=201)
+    return HttpResponse(status=405)
+
+
+def api_missing_sections(request, id):
+    if request.method == 'GET':
+        try:
+            missing_sections = transactions_repo.list_missing_sections(id)
+            breakpoint()
+            return JsonResponse(missing_sections, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
     return HttpResponse(status=405)
 
 
@@ -86,6 +93,5 @@ def api_create_section(request, id):
     """API endpoint for creating a section in a budget."""
     if request.method == 'POST':
         data = json.loads(request.body)
-        return JsonResponse(budget_service.create_section(id, data),
-                            status=201)
+        return JsonResponse(budget_service.create_section(id, data), status=201)
     return HttpResponse(status=405)

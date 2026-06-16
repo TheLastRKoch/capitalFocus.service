@@ -2,7 +2,6 @@ from django.db import models
 from core.repositories.base import BaseRepository
 from transactions.models import TransactionsModel
 from budgets.models import BudgetsModel
-from categories.models import CategoriesModel
 from sections.models import SectionsModel
 
 
@@ -39,4 +38,7 @@ class TransactionsRepository(BaseRepository):
             transaction.subcategory.parent for transaction in budget_transactions if transaction.subcategory is not None
         })
         section_categories = [section.category for section in SectionsModel.objects.filter(budgets=budget)]
-        return [category for category in transaction_categories if category not in section_categories]
+        return [{
+            'id': category.id,
+            'label': category.label
+        } for category in transaction_categories if category not in section_categories]
