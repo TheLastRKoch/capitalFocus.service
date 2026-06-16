@@ -27,12 +27,8 @@ urlpatterns = [
     path('', lambda r: redirect('budgets:index')),
 
     # Template URLs
-    path('budgets/', include(('budgets.urls', 'budgets'),
-                             namespace='budgets')),
-    path(
-        'transactions/',
-        include(('transactions.urls', 'transactions'),
-                namespace='transactions')),
+    path('budgets/', include(('budgets.urls', 'budgets'), namespace='budgets')),
+    path('transactions/', include(('transactions.urls', 'transactions'), namespace='transactions')),
 
     # API URLs (to match old Flask structure)
     path(
@@ -41,41 +37,23 @@ urlpatterns = [
             path('', budget_views.api_index, name='api_index'),
             path('active/', budget_views.api_active, name='api_active'),
             path('inactive/', budget_views.api_inactive, name='api_inactive'),
-            path('<str:id>/', budget_views.api_get_by_id,
-                 name='api_get_by_id'),
-            path('<str:id>/complete/',
-                 budget_views.api_get_by_id_complete,
-                 name='api_get_by_id_complete'),
-            path('<str:id>/sections/',
-                 budget_views.api_create_section,
-                 name='api_create_section'),
+            path('<str:id>/', budget_views.api_get_by_id, name='api_get_by_id'),
+            path('<str:id>/complete/', budget_views.api_get_by_id_complete, name='api_get_by_id_complete'),
+            path('<str:id>/sections/', budget_views.api_create_section, name='api_create_section'),
+            path('<str:id>/missing_sections/', budget_views.api_missing_sections, name='api_missing_sections')
         ])),
-    path(
-        'api/subcategory/',
-        include([
-            path('<str:id>/',
-                 categories_views.api_get_subcategory_by_id,
-                 name='api_get_subcategory_by_id'),
-        ])),
+    path('api/subcategory/',
+         include([
+             path('<str:id>/', categories_views.api_get_subcategory_by_id, name='api_get_subcategory_by_id'),
+         ])),
     path(
         'api/transactions/',
         include([
             path('', transaction_views.api_list, name='api_index'),
-            path('export/',
-                 transaction_views.api_export_csv,
-                 name='api_export_csv'),
-            path('uncategorize/',
-                 transaction_views.api_uncategorize,
-                 name='api_uncategorize'),
-            path('<str:id>/',
-                 transaction_views.api_details,
-                 name='api_details'),
+            path('export/', transaction_views.api_export_csv, name='api_export_csv'),
+            path('uncategorize/', transaction_views.api_uncategorize, name='api_uncategorize'),
+            path('<str:id>/', transaction_views.api_details, name='api_details'),
         ])),
-    path(
-        'api/sections/',
-        include([
-            path('<str:section_id>',
-                 sections_views.api_update_section,
-                 name='api_update_section')
-        ]))
+    path('api/sections/',
+         include([path('<str:section_id>', sections_views.api_update_section, name='api_update_section')]))
 ]

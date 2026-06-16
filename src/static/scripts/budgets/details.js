@@ -17,7 +17,8 @@ class BudgetDetailsManager extends BaseManager {
         loader: document.getElementById('categoriesLoader'),
         refreshBtn: document.getElementById('refreshSections'),
         addForm: document.getElementById('addCategoryForm'),
-        addModal: document.getElementById('addCategoryModal')
+        addModal: document.getElementById('addCategoryModal'),
+        datalist: document.getElementById('datalistOptions')
     };
 
     constructor() {
@@ -83,9 +84,12 @@ class BudgetDetailsManager extends BaseManager {
             if (!this.#budgetId) {
                 await this.#fetchActiveBudget();
             }
-            
+
             if (this.#budgetId) {
-                await this.#fetchBudgetDetails();
+                await Promise.all([
+                    this.#fetchBudgetDetails(),
+                    this.#fetchMissingSections()
+                ]);
             } else {
                 this.renderEmpty(this.#elements.accordion, 'Please create a budget first.');
             }
@@ -93,6 +97,33 @@ class BudgetDetailsManager extends BaseManager {
             this.renderError(this.#elements.accordion, 'Failed to load budget details.');
         } finally {
             this.hideLoader(this.#elements.loader);
+        }
+    }
+
+    async #fetchMissingSections() {
+        if (!this.#budgetId || !this.#elements.datalist) return;
+        try {
+            const missingSections = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/missing_sections/`);
+            const dropdownMenu = document.getElementById('missing-sections-menu');
+
+            // Clear existing static placeholder items (Girl, House)
+            dropdownMenu.innerHTML = '';
+
+            // Loop through each section and create dropdown items
+            missingSections.forEach(section => {
+                const li = document.createElement('li');
+
+                const a = document.createElement('a');
+                a.className = 'dropdown-item';
+                a.href = `#section-${section.id}`; // Or any target URL you need
+                a.textContent = section.label;
+                a.dataset.id = section.id; // Optional: stores the ID for click events
+
+                li.appendChild(a);
+                dropdownMenu.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Failed to fetch missing sections:', error);
         }
     }
 
@@ -108,63 +139,63 @@ class BudgetDetailsManager extends BaseManager {
         this.#render();
     }
 
-     #render() {
-         const budget = this.#budget;
-         if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
-         if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
-         
-         const sections = budget.sections || [];
-         if (sections.length === 0) {
-             this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
-             return;
-         }
+    #render() {
+        const budget = this.#budget;
+        if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
+        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
 
-         const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
-         if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
-         
-         // Setup event listeners for balance buttons
-         this.#setupBalanceButtons();
-         this.#updateOverview();
-     }
+        const sections = budget.sections || [];
+        if (sections.length === 0) {
+            this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
+            return;
+        }
 
-     #setupBalanceButtons() {
-         const balanceButtons = this.#elements.accordion?.querySelectorAll('[data-balance-btn]');
-         balanceButtons?.forEach(btn => {
-             btn.addEventListener('click', async (e) => {
-                 e.preventDefault();
-                 const sectionId = btn.dataset.sectionId;
-                 const budgetId = btn.dataset.budgetId;
-                 const currentProjection = parseFloat(btn.dataset.projection);
-                 const remaining = parseFloat(btn.dataset.remaining);
-                 
-                 await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
-             });
-         });
-     }
+        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
+        if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
 
-     async #handleBalanceSection(budgetId, sectionId, currentProjection, remaining) {
-         // If remaining is negative, multiply by -1 to get positive value
-         const newProjection = remaining < 0 ? currentProjection + (remaining * -1) : remaining;
-         
-         try {
-             await ApiService.fetchJson(`/api/sections/${sectionId}`, {
-                 method: 'PUT',
-                 body: JSON.stringify({ projection: newProjection })
-             });
-             
-             NotificationService.show('Section balanced successfully!', 'success');
-             await this.init();
-         } catch (error) {
-             NotificationService.show('Failed to balance section.', 'danger');
-         }
-     }
+        // Setup event listeners for balance buttons
+        this.#setupBalanceButtons();
+        this.#updateOverview();
+    }
 
-    #updateOverview() {        
-        let totalSectionProjection  = 0
-        this.#budget.sections.forEach(function(section){
+    #setupBalanceButtons() {
+        const balanceButtons = this.#elements.accordion?.querySelectorAll('[data-balance-btn]');
+        balanceButtons?.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const sectionId = btn.dataset.sectionId;
+                const budgetId = btn.dataset.budgetId;
+                const currentProjection = parseFloat(btn.dataset.projection);
+                const remaining = parseFloat(btn.dataset.remaining);
+
+                await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
+            });
+        });
+    }
+
+    async #handleBalanceSection(budgetId, sectionId, currentProjection, remaining) {
+        // If remaining is negative, multiply by -1 to get positive value
+        const newProjection = remaining < 0 ? currentProjection + (remaining * -1) : remaining;
+
+        try {
+            await ApiService.fetchJson(`/api/sections/${sectionId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ projection: newProjection })
+            });
+
+            NotificationService.show('Section balanced successfully!', 'success');
+            await this.init();
+        } catch (error) {
+            NotificationService.show('Failed to balance section.', 'danger');
+        }
+    }
+
+    #updateOverview() {
+        let totalSectionProjection = 0
+        this.#budget.sections.forEach(function (section) {
             totalSectionProjection += parseFloat(section.projection)
         })
-        
+
 
         if (this.#elements.remaining) {
             const available = (this.#budget.projection || 0) - totalSectionProjection;
@@ -177,7 +208,7 @@ class BudgetDetailsManager extends BaseManager {
         const remaining = section.remaining !== undefined ? section.remaining : 0;
         const collapseId = `categoryCollapse${index}`;
         const sectionId = section.id;
-        
+
         return `
             <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
@@ -213,16 +244,16 @@ class BudgetDetailsManager extends BaseManager {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${transactions.length > 0 
-                                        ? transactions.map(t => `
+                                    ${transactions.length > 0
+                ? transactions.map(t => `
                                             <tr class="align-middle">
                                                 <td class="text-muted border-end py-3">${Formatter.formatDate(t.date)}</td>
                                                 <td class="text-dark fw-bold border-end py-3">${Formatter.formatCurrency(t.amount)}</td>
                                                 <td class="text-muted py-3">${Formatter.escapeHtml(t.commerce)}</td>
                                             </tr>
                                         `).join('')
-                                        : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'
-                                    }
+                : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'
+            }
                                 </tbody>
                             </table>
                         </div>
@@ -232,11 +263,6 @@ class BudgetDetailsManager extends BaseManager {
         `;
     }
 }
-
-// Initialize manager on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    new BudgetDetailsManager();
-});
 
 // Initialize manager on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

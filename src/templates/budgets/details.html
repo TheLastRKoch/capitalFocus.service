@@ -53,6 +53,18 @@
     </div>
 </div>
 
+<div class="d-flex align-items-center mb-5 fade-in">
+  <div class="dropdown">
+    <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      Missing sections
+    </a>
+
+    <ul class="dropdown-menu" id="missing-sections-menu">
+      <li><span class="dropdown-item-text text-muted">Loading...</span></li>
+    </ul>
+  </div>
+</div>
+
 <!-- Sections Container -->
 <div id="categoriesAccordion" class="fade-in" style="animation-delay: 0.2s;">
     <!-- Loader -->
@@ -110,25 +122,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="addSectionForm">
+                <form id="addCategoryForm">
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">NAME</label>
-                        <input type="text" class="form-control bg-light border-0" id="newCategoryName" required>
+                        <input type="text" class="form-control bg-light border-0" id="newCategoryName"
+                            list="datalistOptions" placeholder="Select or type a name..." required>
+                        <datalist id="datalistOptions"></datalist>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">PROJECTION</label>
                         <input type="number" class="form-control bg-light border-0" id="newCategoryBudget"
                             placeholder="0.00" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="exampleDataList" class="form-label">Category</label>
-                        <input class="form-control" list="datalistOptions" id="exampleDataList"
-                            placeholder="Type to search...">
-                        <datalist id="datalistOptions">
-                            <option value="Home">
-                            <option value="Luxuries">
-                            <option value="Girl">
-                        </datalist>
                     </div>
                 </form>
             </div>
