@@ -48,7 +48,6 @@ def api_missing_sections(request, id):
     if request.method == 'GET':
         try:
             missing_sections = transactions_repo.list_missing_sections(id)
-            breakpoint()
             return JsonResponse(missing_sections, safe=False)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)

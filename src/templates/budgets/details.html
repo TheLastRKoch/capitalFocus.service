@@ -54,16 +54,15 @@
 </div>
 
 <div class="d-flex align-items-center mb-5 fade-in">
-    <div class="dropdown">
-  <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Missing sections (1)
-  </a>
+  <div class="dropdown">
+    <a class="btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+      Missing sections
+    </a>
 
-  <ul class="dropdown-menu">
-    <li><a class="dropdown-item" href="#">Girl</a></li>
-    <li><a class="dropdown-item" href="#">House</a></li>
-  </ul>
-</div>
+    <ul class="dropdown-menu" id="missing-sections-menu">
+      <li><span class="dropdown-item-text text-muted">Loading...</span></li>
+    </ul>
+  </div>
 </div>
 
 <!-- Sections Container -->
@@ -126,7 +125,8 @@
                 <form id="addCategoryForm">
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">NAME</label>
-                        <input type="text" class="form-control bg-light border-0" id="newCategoryName" list="datalistOptions" placeholder="Select or type a name..." required>
+                        <input type="text" class="form-control bg-light border-0" id="newCategoryName"
+                            list="datalistOptions" placeholder="Select or type a name..." required>
                         <datalist id="datalistOptions"></datalist>
                     </div>
                     <div class="mb-3">
