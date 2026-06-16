@@ -17,7 +17,8 @@ class BudgetDetailsManager extends BaseManager {
         loader: document.getElementById('categoriesLoader'),
         refreshBtn: document.getElementById('refreshSections'),
         addForm: document.getElementById('addCategoryForm'),
-        addModal: document.getElementById('addCategoryModal')
+        addModal: document.getElementById('addCategoryModal'),
+        datalist: document.getElementById('datalistOptions')
     };
 
     constructor() {
@@ -85,7 +86,10 @@ class BudgetDetailsManager extends BaseManager {
             }
             
             if (this.#budgetId) {
-                await this.#fetchBudgetDetails();
+                await Promise.all([
+                    this.#fetchBudgetDetails(),
+                    this.#fetchMissingSections()
+                ]);
             } else {
                 this.renderEmpty(this.#elements.accordion, 'Please create a budget first.');
             }
@@ -93,6 +97,16 @@ class BudgetDetailsManager extends BaseManager {
             this.renderError(this.#elements.accordion, 'Failed to load budget details.');
         } finally {
             this.hideLoader(this.#elements.loader);
+        }
+    }
+
+    async #fetchMissingSections() {
+        if (!this.#budgetId || !this.#elements.datalist) return;
+        try {
+            const missing = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/missing_sections/`);
+            this.#elements.datalist.innerHTML = (missing || []).map(item => `<option value="${item.label}">`).join('');
+        } catch (error) {
+            console.error('Failed to fetch missing sections:', error);
         }
     }
 
@@ -232,11 +246,6 @@ class BudgetDetailsManager extends BaseManager {
         `;
     }
 }
-
-// Initialize manager on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    new BudgetDetailsManager();
-});
 
 // Initialize manager on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
