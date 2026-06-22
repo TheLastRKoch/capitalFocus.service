@@ -71,9 +71,9 @@ class BudgetDetailsManager extends BaseManager {
 
     #getBudgetIdFromUrl() {
         const path = window.location.pathname;
-        const parts = path.split('/');
+        const parts = path.split('/').filter(Boolean);
         // Expected format /budgets/ID
-        return parts.at(-1) !== 'budgets' ? parts.at(-1) : null;
+        return parts.length > 0 && parts.at(-1) !== 'budgets' ? parts.at(-1) : null;
     }
 
     async init() {
