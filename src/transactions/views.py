@@ -69,7 +69,7 @@ def api_list(request):
                 if 'date' in item:
                     val = item.pop('date')
                     if val:
-                        item['date'] = datetime.strptime(val, "%Y/%m/%d %H:%M:%S")
+                        item['date'] = datetime.strptime(val, "%d/%m/%y %H:%M")
 
                 # Map 'budget' to 'budgets_id' if provided
                 if 'budget' in item:

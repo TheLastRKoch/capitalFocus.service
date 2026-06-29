@@ -28,4 +28,4 @@ class SectionsModel(models.Model):
         verbose_name_plural = 'Sections'
 
     def __str__(self):
-        return self.label
+        return f'{self.budgets.label} - {self.label}'
