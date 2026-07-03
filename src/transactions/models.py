@@ -9,16 +9,17 @@ class TransactionsModel(models.Model):
         ('Categorized', 'Categorized'),
         ('Uncategorized', 'Uncategorized'),
         ('Pending', 'Pending'),
+        ('Mock', 'Mock'),
     ]
 
     date = models.DateTimeField()
     commerce = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    location = models.CharField(max_length=255)
-    card = models.CharField(max_length=50)
-    authorization = models.CharField(max_length=50)
-    reference = models.CharField(max_length=50)
-    transactionType = models.CharField(max_length=255)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    card = models.CharField(max_length=50, null=True, blank=True)
+    authorization = models.CharField(max_length=50, null=True, blank=True)
+    reference = models.CharField(max_length=50, null=True, blank=True)
+    transactionType = models.CharField(max_length=255, null=True, blank=True)
     subcategory = models.ForeignKey(SubcategoriesModel,
                                     on_delete=models.SET_NULL,
                                     related_name='transactions',
