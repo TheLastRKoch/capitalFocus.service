@@ -20,21 +20,19 @@ class TransactionsModel(models.Model):
     authorization = models.CharField(max_length=50, null=True, blank=True)
     reference = models.CharField(max_length=50, null=True, blank=True)
     transactionType = models.CharField(max_length=255, null=True, blank=True)
-    subcategory = models.ForeignKey(SubcategoriesModel,
-                                    on_delete=models.SET_NULL,
-                                    related_name='transactions',
-                                    null=True,
-                                    blank=True)
-    status = models.CharField(max_length=20,
-                              choices=STATUS_CHOICES,
-                              default='Uncategorized')
-    json = models.TextField(blank=True, null=True)
-    html = models.TextField(blank=True, null=True)
     budgets = models.ForeignKey(BudgetsModel,
                                 on_delete=models.CASCADE,
                                 related_name='transactions',
                                 null=True,
                                 blank=True)
+    subcategory = models.ForeignKey(SubcategoriesModel,
+                                    on_delete=models.SET_NULL,
+                                    related_name='transactions',
+                                    null=True,
+                                    blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Uncategorized')
+    json = models.TextField(blank=True, null=True)
+    html = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
