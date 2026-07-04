@@ -3,6 +3,7 @@ services:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
+    container_name: capital-focus-service
     ports:
       - "9003:8080"
     env_file:
@@ -12,20 +13,6 @@ services:
     networks:
       - rklan
 
-  db:
-    image: postgres:latest
-    env_file:
-      - ../.env
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/18/data
-    networks:
-      - rklan
-
-volumes:
-  postgres_data:
-
 networks:
   rklan:
-    driver: bridge
+    external: true
