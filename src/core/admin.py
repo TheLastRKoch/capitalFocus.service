@@ -7,7 +7,12 @@ from categories.models import CategoriesModel, SubcategoriesModel
 # Register your model
 admin.site.register(BudgetsModel)
 admin.site.register(CategoriesModel)
-admin.site.register(SubcategoriesModel)
+
+
+@admin.register(SubcategoriesModel)
+class SubcategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'parent', 'label')
+    list_filter = ['parent']
 
 
 @admin.register(SectionsModel)
