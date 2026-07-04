@@ -15,11 +15,6 @@ class TransactionsModel(models.Model):
     date = models.DateTimeField()
     commerce = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    location = models.CharField(max_length=255, null=True, blank=True)
-    card = models.CharField(max_length=50, null=True, blank=True)
-    authorization = models.CharField(max_length=50, null=True, blank=True)
-    reference = models.CharField(max_length=50, null=True, blank=True)
-    transactionType = models.CharField(max_length=255, null=True, blank=True)
     budgets = models.ForeignKey(BudgetsModel,
                                 on_delete=models.CASCADE,
                                 related_name='transactions',
@@ -31,6 +26,11 @@ class TransactionsModel(models.Model):
                                     null=True,
                                     blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Uncategorized')
+    location = models.CharField(max_length=255, null=True, blank=True)
+    card = models.CharField(max_length=50, null=True, blank=True)
+    authorization = models.CharField(max_length=50, null=True, blank=True)
+    reference = models.CharField(max_length=50, null=True, blank=True)
+    transactionType = models.CharField(max_length=255, null=True, blank=True)
     json = models.TextField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

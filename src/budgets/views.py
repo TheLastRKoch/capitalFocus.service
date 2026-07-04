@@ -81,8 +81,12 @@ def api_get_by_id_complete(request, id):
         budget = budgets_repo.get_by_id(id)
         if not budget:
             return HttpResponse(status=404)
-        sections = budget_service.get_section_transactions(id)
-        budget['sections'] = sections
+        section_transactions, budget_encumbered, budget_spent = budget_service.get_section_transactions(id)
+        budget['sections'] = section_transactions
+        budget['budget_encumbered'] = budget_encumbered
+        budget['budget_spent'] = budget_spent
+        budget['budget_remaining'] = budget.get('projection') - budget_spent
+        budget['budget_encumbered_remaining'] = budget.get('projection') - budget_encumbered
         return JsonResponse(budget, safe=False)
     return HttpResponse(status=405)
 

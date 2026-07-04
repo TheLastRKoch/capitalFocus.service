@@ -46,6 +46,7 @@ def api_list(request):
         return JsonResponse(transactions_repo.list_paginated(limit, offset))
 
     if request.method == 'POST':
+        date_format = '%Y-%m-%d %H:%M'
         try:
             data = json.loads(request.body)
             if not isinstance(data, list):
@@ -69,7 +70,7 @@ def api_list(request):
                 if 'date' in item:
                     val = item.pop('date')
                     if val:
-                        item['date'] = datetime.strptime(val, "%d/%m/%y %H:%M")
+                        item['date'] = datetime.strptime(val, date_format)
 
                 # Map 'budget' to 'budgets_id' if provided
                 if 'budget' in item:

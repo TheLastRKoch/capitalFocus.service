@@ -6,7 +6,11 @@ from categories.models import CategoriesModel, SubcategoriesModel
 
 # Register your model
 admin.site.register(BudgetsModel)
-admin.site.register(CategoriesModel)
+
+
+@admin.register(CategoriesModel)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'label')
 
 
 @admin.register(SubcategoriesModel)
