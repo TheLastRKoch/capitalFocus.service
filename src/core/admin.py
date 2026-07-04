@@ -6,9 +6,15 @@ from categories.models import CategoriesModel, SubcategoriesModel
 
 # Register your model
 admin.site.register(BudgetsModel)
-admin.site.register(SectionsModel)
 admin.site.register(CategoriesModel)
 admin.site.register(SubcategoriesModel)
+
+
+@admin.register(SectionsModel)
+class SectionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'label', 'budgets', 'projection')
+    search_fields = ('date', 'label', 'budgets')
+    list_filter = ('budgets', 'category')
 
 
 @admin.register(TransactionsModel)
