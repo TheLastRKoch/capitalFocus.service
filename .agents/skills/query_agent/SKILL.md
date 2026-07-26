@@ -13,14 +13,15 @@ All structural information must be sourced from `wiki/db.md`. Additionally, refe
 
 ### Guidelines
 1. **Reference Check**: Always check `wiki/common-queries.md` first to see if a similar query exists or to understand the established patterns for building queries in this domain.
-2. **Schema Alignment**: Parse `wiki/db.md` to ensure all identifiers, tables, and columns are accurate.
+2. **Schema Alignment**: Parse `wiki/db.md` to ensure all identifiers, tables, and columns are accurate. **Use the table names defined in the markdown headers** (e.g., `transactions`, `budgets`) rather than inferring Django Model naming conventions.
 3. **Dialect**: Unless specified otherwise, use standard ANSI SQL.
 4. **Best Practices**:
     - Use meaningful table aliases.
     - Join tables using explicit `JOIN` syntax.
     - Include comments for complex logic.
     - Select only the necessary columns instead of using `SELECT *`.
-5. **Constraints**: If the user's request contradicts the schema in `wiki/db.md`, explain the discrepancy instead of hallucinating a query.
+5. **Constraints**: If the user's request contradicts the schema in `wiki/db.md`, explain the discrepancy instead of hallucinating a query. 
+6. **Naming Integrity**: Do not attempt to guess or "correct" aliases or table names found in `wiki/common-queries.md` (e.g., if the wiki uses `cegory_name`, use `cegory_name`).
 
 ### Output Format
 Return your response in the following structure:
