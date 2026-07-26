@@ -30,5 +30,5 @@ class SectionAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('id', 'date', 'commerce', 'amount', 'location', 'card', 'authorization', 'reference',
                     'transactionType', 'subcategory', 'status', 'budgets')
-    search_fields = ('date', 'commerce', 'location')
+    search_fields = ('id', 'date', 'commerce', 'location')
     list_filter = ('date', 'budgets', 'status', 'subcategory')

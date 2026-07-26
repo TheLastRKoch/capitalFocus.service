@@ -15,6 +15,7 @@ class TransactionsModel(models.Model):
     date = models.DateTimeField()
     commerce = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
+    comments = models.CharField(max_length=255, null=True, blank=True)
     budgets = models.ForeignKey(BudgetsModel,
                                 on_delete=models.CASCADE,
                                 related_name='transactions',
