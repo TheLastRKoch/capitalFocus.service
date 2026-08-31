@@ -65,44 +65,106 @@ def api_list(request):
             budget_cache = {}
             subcategory_cache = {}
 
-            results = []
-            for item in data:
-                if 'date' in item:
-                    val = item.pop('date')
-                    if val:
-                        item['date'] = datetime.strptime(val, date_format)
+            created_items = []
+            existing_items = []
+            error_items = []
+            seen_in_batch = set()
 
-                # Map 'budget' to 'budgets_id' if provided
-                if 'budget' in item:
-                    val = item.pop('budget')
-                    if val:
-                        if isinstance(val, str) and not str(val).isdigit():
-                            if val not in budget_cache:
-                                b = BudgetsModel.objects.filter(label__iexact=val).first()
-                                budget_cache[val] = b.id if b else None
-                            item['budgets_id'] = budget_cache[val]
-                        else:
-                            item['budgets_id'] = val
+            for item_idx, raw_item in enumerate(data):
+                if not isinstance(raw_item, dict):
+                    error_items.append({
+                        'index': item_idx,
+                        'item': raw_item,
+                        'error': 'Item must be a dictionary'
+                    })
+                    continue
 
-                # Map 'subcategory' to 'subcategory_id' if provided
-                if 'subcategory' in item:
-                    val = item.pop('subcategory')
-                    if val:
-                        if isinstance(val, str) and not str(val).isdigit():
-                            if val not in subcategory_cache:
-                                s = SubcategoriesModel.objects.filter(label__iexact=val).first()
-                                subcategory_cache[val] = s.id if s else None
-                            item['subcategory_id'] = subcategory_cache[val]
-                        else:
-                            item['subcategory_id'] = val
+                item = dict(raw_item)
+                try:
+                    parsed_date = None
+                    if 'date' in item:
+                        val = item.pop('date')
+                        if val:
+                            if isinstance(val, datetime):
+                                parsed_date = val
+                            else:
+                                parsed_date = datetime.strptime(str(val).strip(), date_format)
+                            item['date'] = parsed_date
 
-                # Filter item to only include valid fields
-                filtered_item = {k: v for k, v in item.items() if k in valid_fields}
+                    commerce = item.get('commerce')
+                    amount = item.get('amount')
 
-                if filtered_item:
-                    results.append(transactions_repo.create(filtered_item))
+                    # Check for duplicates if identifying fields are present
+                    if parsed_date is not None and commerce is not None and amount is not None:
+                        batch_key = (parsed_date.isoformat(), str(commerce).strip(), str(amount).strip())
+                        if batch_key in seen_in_batch or transactions_repo.exists_by_date_commerce_amount(
+                                parsed_date, commerce, amount):
+                            existing_items.append({
+                                'index': item_idx,
+                                'date': parsed_date.strftime(date_format) if parsed_date else None,
+                                'commerce': commerce,
+                                'amount': str(amount),
+                            })
+                            seen_in_batch.add(batch_key)
+                            continue
+                        seen_in_batch.add(batch_key)
 
-            return JsonResponse({'status': 'success', 'created': len(results)}, status=201)
+                    # Map 'budget' to 'budgets_id' if provided
+                    if 'budget' in item:
+                        val = item.pop('budget')
+                        if val:
+                            if isinstance(val, str) and not str(val).isdigit():
+                                if val not in budget_cache:
+                                    b = BudgetsModel.objects.filter(label__iexact=val).first()
+                                    budget_cache[val] = b.id if b else None
+                                item['budgets_id'] = budget_cache[val]
+                            else:
+                                item['budgets_id'] = val
+
+                    # Map 'subcategory' to 'subcategory_id' if provided
+                    if 'subcategory' in item:
+                        val = item.pop('subcategory')
+                        if val:
+                            if isinstance(val, str) and not str(val).isdigit():
+                                if val not in subcategory_cache:
+                                    s = SubcategoriesModel.objects.filter(label__iexact=val).first()
+                                    subcategory_cache[val] = s.id if s else None
+                                item['subcategory_id'] = subcategory_cache[val]
+                            else:
+                                item['subcategory_id'] = val
+
+                    # Filter item to only include valid fields
+                    filtered_item = {k: v for k, v in item.items() if k in valid_fields}
+
+                    if filtered_item:
+                        created_record = transactions_repo.create(filtered_item)
+                        created_items.append(created_record)
+                    else:
+                        error_items.append({
+                            'index': item_idx,
+                            'item': raw_item,
+                            'error': 'No valid fields provided'
+                        })
+                except Exception as item_err:
+                    error_items.append({
+                        'index': item_idx,
+                        'item': raw_item,
+                        'error': str(item_err)
+                    })
+
+            return JsonResponse({
+                'status': 'success',
+                'created': len(created_items),
+                'summary': {
+                    'total': len(data),
+                    'created_count': len(created_items),
+                    'existing_count': len(existing_items),
+                    'error_count': len(error_items),
+                    'created': created_items,
+                    'existing': existing_items,
+                    'errors': error_items
+                }
+            }, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 

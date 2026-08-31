@@ -76,3 +76,9 @@ class TransactionsRepository(BaseRepository):
 
         return groups
 
+    def exists_by_date_commerce_amount(self, date, commerce: str, amount) -> bool:
+        """Check if a transaction with the same date, commerce, and amount already exists."""
+        if date is None or commerce is None or amount is None:
+            return False
+        return self.model.objects.filter(date=date, commerce=commerce, amount=amount).exists()
+
