@@ -52,6 +52,7 @@ urlpatterns = [
             path('', transaction_views.api_list, name='api_index'),
             path('export/', transaction_views.api_export_csv, name='api_export_csv'),
             path('uncategorize/', transaction_views.api_uncategorize, name='api_uncategorize'),
+            path('duplicates/', transaction_views.api_duplicates, name='api_duplicates'),
             path('<str:id>/', transaction_views.api_details, name='api_details'),
         ])),
     path('api/sections/',

@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from core.repositories.base import BaseRepository
 from transactions.models import TransactionsModel
 from budgets.models import BudgetsModel
@@ -42,3 +44,35 @@ class TransactionsRepository(BaseRepository):
             'id': category.id,
             'label': category.label
         } for category in transaction_categories if category not in section_categories]
+
+    def list_duplicates(self) -> list:
+        """Return groups of duplicate transactions sharing the same amount, commerce, and calendar date.
+
+        Uses a two-step ORM approach:
+        1. Find duplicate keys (commerce, amount, day) with count > 1.
+        2. For each key, fetch all matching transactions ordered by id ascending
+           (lowest id = presumed original).
+
+        Note: Comparison is case-sensitive on commerce. Performance is acceptable
+        for typical personal-finance data volumes; a composite DB index on
+        (commerce, amount, date::date) would help at larger scale.
+        """
+        # Step 1: find groups with more than one transaction on the same calendar date
+        duplicate_keys = (
+            self.model.objects.annotate(day=TruncDate('date')).values('commerce', 'amount',
+                                                                      'day').annotate(count=Count('id')).filter(
+                                                                          count__gt=1))
+
+        groups = []
+        for key in duplicate_keys:
+            transactions = list(
+                self.model.objects.annotate(day=TruncDate('date')).filter(
+                    commerce=key['commerce'],
+                    amount=key['amount'],
+                    day=key['day'],
+                ).order_by('id').values('id', 'amount', 'commerce', 'date'))
+            if transactions:
+                groups.append(transactions)
+
+        return groups
+

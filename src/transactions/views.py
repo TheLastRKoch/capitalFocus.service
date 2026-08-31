@@ -180,3 +180,29 @@ def api_details(request, id):
         }
         return JsonResponse(transactions_repo.update(id, fields))
     return HttpResponse(status=405)
+
+
+def api_duplicates(request):
+    """Return groups of duplicate transactions (same amount, commerce, and calendar date)."""
+    if request.method == 'GET':
+        groups = transactions_repo.list_duplicates()
+        # Serialize Decimal and datetime values to JSON-safe strings
+        serialized = []
+        for group in groups:
+            serialized_group = []
+            for t in group:
+                serialized_group.append({
+                    'id': t['id'],
+                    'amount': str(t['amount']),
+                    'commerce': t['commerce'],
+                    'date': t['date'].isoformat() if hasattr(t['date'], 'isoformat') else str(t['date']),
+                })
+            serialized.append(serialized_group)
+        return JsonResponse({'groups': serialized})
+    return HttpResponse(status=405)
+
+
+def duplicates(request):
+    """Render the duplicate transactions detection page."""
+    return render(request, 'transactions/duplicates.html', {'active_page': 'transactions'})
+
