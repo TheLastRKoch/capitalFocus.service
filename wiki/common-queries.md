@@ -3,7 +3,7 @@
 ### All transactions with category
 ```sql
  SELECT 
-		TO_CHAR(t.date, 'YYYY-MM-DD HH24:MI:SS') AS date,
+		TO_CHAR(t.date, 'YYYY-MM-DD HH24:MI') AS date,
         t.commerce,
         t.amount,
         t.location,
