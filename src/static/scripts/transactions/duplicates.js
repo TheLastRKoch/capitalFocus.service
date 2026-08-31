@@ -44,7 +44,7 @@ function buildCard(transaction, isOriginal) {
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="text-muted small mb-1">Amount</div>
-                    <div class="fw-semibold text-danger">$${parseFloat(transaction.amount).toFixed(2)}</div>
+                    <div class="fw-semibold text-danger">${parseFloat(transaction.amount).toFixed(2)}</div>
                 </div>
                 <div class="col-12 col-md-4">
                     <div class="text-muted small mb-1">Date</div>
