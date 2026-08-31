@@ -4,29 +4,44 @@ schema: spec-driven
 # This is shown to AI when creating artifacts.
 # Add your tech stack, conventions, style guides, domain knowledge, etc.
 # Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+    ## 1. Executive Stack Summary
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+• Frontend: HTML5, Vanilla JavaScript (ES6 dynamic client-side rendering with fetch API), Bootstrap 5.3.3 & Bootstrap Icons 1.11.3 (via CDN)
+• Backend: Python 3.14 (Docker Alpine) / Python >= 3.8, Django 5.x, RESTful JSON API endpoints + Django Server-Side Template views
+• Database/Storage: PostgreSQL, Django Native ORM (Repository & Service pattern abstraction layer), psycopg2-binary driver
+• Testing/CI: No unit/integration test framework configured; manual verification via Django manage.py and custom wait_for_db command
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+## 2. Core Directory Layout
+
+• /src/core: Shared system layer containing main settings (settings.py), root routing (urls.py), database wait management command (management/commands/wait_for_db.py), repository
+abstractions (repositories/), and service orchestrators (services/).
+• /src/budgets: Budget management domain app containing BudgetsModel, view logic for budget list/details, and /api/budgets/ endpoints.
+• /src/transactions: Transaction processing domain app containing TransactionsModel, bulk CSV import/export handlers (api_export_csv), and category management APIs.
+• /src/categories: Financial category classification app containing CategoriesModel, SubcategoriesModel, and subcategory query endpoints.
+• /src/sections: Junction domain app containing SectionsModel mapping budget projections to category limits and handling update endpoints.
+• /src/templates: Server-side Django HTML templates (base.html, budgets/, transactions/) providing layout structure for client-side JavaScript rendering.
+• /src/static: Static frontend assets including stylesheets (styles/), vanilla JavaScript client modules (scripts/), and asset images (imgs/).
+• /deployment: Infrastructure configuration files including Dockerfile (Alpine build), docker-compose.yaml (port 9003:8080 mapping), and Kubernetes manifest (deployment.yaml).
+• /wiki: Schema documentation (db.md) and reference SQL analytical queries (common-queries.md).
+• /openspec: Project specification workflow configuration (config.yaml).
+
+## 3. Critical Conventions & Rules
+
+• Layered Architecture: Data operations must be encapsulated inside BaseRepository implementations (BudgetsRepository, TransactionsRepository) and orchestrated by service classes
+(BudgetService). Views handle HTTP routing and delegate logic to services/repositories.
+• CSRF Exemption & API Style: Web API endpoints parse raw JSON request bodies and use @csrf_exempt decorators (with CsrfViewMiddleware disabled in core/settings.py) to serve
+asynchronous frontend fetch requests.
+• JSON Environment Configuration: settings.py parses complex environment settings (such as ALLOWED_HOSTS and DB_CONNECTION) as JSON strings via json.loads(os.getenv(...)).
+• Hybrid Page Loading: Page navigation loads HTML scaffolding from Django template views, while data presentation (tables, projections, transaction states) is rendered dynamically
+on the client side using Vanilla JS.
+• Code Style Standard: Python code follows Google Style guidelines (.style.yapf) enforced with a line length limit of 120 characters (.flake8).
+
+## 4. Environment & Configuration Highlights
+
+• Key environment variables required: DJANGO_SECRET_KEY, DB_CONNECTION (JSON dictionary string for Django database config), ALLOWED_HOSTS (JSON list string), POSTGRES_USER,
+POSTGRES_PASSWORD, POSTGRES_DB
+• Special build or execution constraints:
+    • Container environment requires Alpine packages libpq-dev and gcc to compile PostgreSQL database bindings.
+    • Docker Compose deployment expects an external Docker network named rklan.
+    • Application container execution runs entrypoint.sh, executing python3 src/manage.py wait_for_db, followed by migrate before starting the server on port 8080.
