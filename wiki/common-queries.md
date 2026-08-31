@@ -1,5 +1,23 @@
 ## Common Join Queries
 
+### All transactions with category
+```sql
+ SELECT 
+		TO_CHAR(t.date, 'YYYY-MM-DD MI:SS') AS date,
+        t.commerce,
+        t.amount,
+        t.location,
+        t.card,
+        t.authorization,
+        t.reference,
+        --t.transactionType,
+        s.label AS subcategory,
+        t.status
+    FROM transactions t
+    LEFT JOIN subcategories s 
+        ON t.subcategory_id = s.id;
+```
+
 ### Transactions per date and category
 ```sql
 SET search_path TO myschema, public;
