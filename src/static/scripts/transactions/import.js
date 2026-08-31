@@ -100,7 +100,27 @@ class TransactionImportManager extends BaseManager {
                 body: JSON.stringify(transactions)
             });
 
-            NotificationService.show(`Successfully imported ${result.created} transactions!`, 'success');
+            const summary = result.summary || {
+                created_count: result.created || 0,
+                existing_count: 0,
+                error_count: 0
+            };
+
+            const createdCount = summary.created_count ?? result.created ?? 0;
+            const existingCount = summary.existing_count ?? 0;
+            const errorCount = summary.error_count ?? 0;
+
+            let msg = `Import complete: ${createdCount} created`;
+            if (existingCount > 0) {
+                msg += `, ${existingCount} duplicate(s) skipped`;
+            }
+            if (errorCount > 0) {
+                msg += `, ${errorCount} error(s)`;
+            }
+
+            const alertType = errorCount > 0 ? (createdCount > 0 ? 'warning' : 'danger') : 'success';
+            NotificationService.show(msg, alertType);
+
             this.#clearData();
         } catch (error) {
             console.error('Import error:', error);
