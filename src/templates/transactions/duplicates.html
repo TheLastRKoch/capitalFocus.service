@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Duplicate Transactions - Capital Focus{% endblock %}
+
+{% block extra_css %}
+<style>
+    .duplicate-group {
+        border-left: 4px solid #dee2e6;
+        padding-left: 0;
+        margin-bottom: 2rem;
+    }
+    .duplicate-group .card:first-child {
+        border-left: 4px solid #0d6efd;
+    }
+    .duplicate-group .card:not(:first-child) {
+        border-left: 4px solid #dc3545;
+    }
+    .badge-original {
+        background-color: #0d6efd;
+    }
+    .badge-duplicate {
+        background-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-5 fade-in">
+    <a href="{% url 'transactions:index' %}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
+        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+        <i class="bi bi-arrow-left fs-5"></i>
+    </a>
+    <div>
+        <h2 class="fw-bold mb-0">Duplicate Transactions</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'budgets:index' %}" class="text-decoration-none text-muted">Budgets</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'transactions:index' %}" class="text-decoration-none text-muted">Transactions</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Duplicates</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="ms-auto">
+        <span id="duplicateCount" class="badge bg-secondary rounded-pill px-3 py-2 fs-6">Loading...</span>
+    </div>
+</div>
+
+<!-- Content Area -->
+<div id="duplicates-container" class="fade-in" style="animation-delay: 0.1s;">
+    <!-- Injected by duplicates.js -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'scripts/transactions/duplicates.js' %}"></script>
+{% endblock %}
