@@ -34,6 +34,7 @@ class TransactionsModel(models.Model):
     transactionType = models.CharField(max_length=255, null=True, blank=True)
     json = models.TextField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
+    tags = models.ManyToManyField('tags.TagModel', related_name='transactions', blank=True, db_table='transaction_tags')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
