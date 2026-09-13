@@ -10,6 +10,7 @@ class TransactionsModel(models.Model):
         ('Uncategorized', 'Uncategorized'),
         ('Pending', 'Pending'),
         ('Mock', 'Mock'),
+        ('Suggested', 'Suggested'),
     ]
 
     date = models.DateTimeField()
