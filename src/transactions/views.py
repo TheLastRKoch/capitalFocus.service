@@ -133,6 +133,13 @@ def api_list(request):
                             else:
                                 item['subcategory_id'] = val
 
+                    # Evaluate status: default to 'Uncategorized' if omitted, null, empty, or whitespace-only
+                    raw_status = item.get('status')
+                    if raw_status is None or (isinstance(raw_status, str) and not raw_status.strip()):
+                        item['status'] = 'Uncategorized'
+                    else:
+                        item['status'] = str(raw_status).strip()
+
                     # Filter item to only include valid fields
                     filtered_item = {k: v for k, v in item.items() if k in valid_fields}
 
