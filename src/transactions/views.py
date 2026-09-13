@@ -268,3 +268,63 @@ def duplicates(request):
     """Render the duplicate transactions detection page."""
     return render(request, 'transactions/duplicates.html', {'active_page': 'transactions'})
 
+
+@csrf_exempt
+def api_transaction_tags(request, id):
+    """Assign tags to a transaction (POST)."""
+    if request.method == 'POST':
+        try:
+            transaction = TransactionsModel.objects.filter(pk=id).first()
+            if not transaction:
+                return JsonResponse({'error': 'Transaction not found.'}, status=404)
+            data = json.loads(request.body)
+            tag_ids = data.get('tag_ids', [])
+            transaction.tags.add(*tag_ids)
+            tags = list(transaction.tags.values('id', 'label'))
+            return JsonResponse({'tags': tags})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return HttpResponse(status=405)
+
+
+@csrf_exempt
+def api_transaction_tag_delete(request, id, tag_id):
+    """Remove a single tag from a transaction (DELETE)."""
+    if request.method == 'DELETE':
+        transaction = TransactionsModel.objects.filter(pk=id).first()
+        if not transaction:
+            return JsonResponse({'error': 'Transaction not found.'}, status=404)
+        if not transaction.tags.filter(pk=tag_id).exists():
+            return JsonResponse({'error': 'Tag not associated with this transaction.'}, status=404)
+        transaction.tags.remove(tag_id)
+        return HttpResponse(status=204)
+    return HttpResponse(status=405)
+
+
+def api_related(request):
+    """Return groups of related transactions (same date+amount OR shared tag)."""
+    if request.method == 'GET':
+        groups = transactions_repo.list_related()
+        serialized = []
+        for group in groups:
+            serialized_txns = []
+            for t in group['transactions']:
+                serialized_txns.append({
+                    'id': t['id'],
+                    'amount': str(t['amount']),
+                    'commerce': t['commerce'],
+                    'date': t['date'].isoformat() if hasattr(t['date'], 'isoformat') else str(t['date']),
+                    'tags': t.get('tags', []),
+                })
+            serialized.append({
+                'reason': group['reason'],
+                'tag': group['tag'],
+                'transactions': serialized_txns,
+            })
+        return JsonResponse({'groups': serialized})
+    return HttpResponse(status=405)
+
+
+def related(request):
+    """Render the related transactions page."""
+    return render(request, 'transactions/related.html', {'active_page': 'transactions'})

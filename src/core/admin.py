@@ -6,9 +6,11 @@ from sections.models import SectionsModel
 from transactions.models import TransactionsModel
 from transactions.forms import SubcategorySelectForm
 from categories.models import CategoriesModel, SubcategoriesModel
+from tags.models import TagModel
 
 # Register your model
 admin.site.register(BudgetsModel)
+admin.site.register(TagModel)
 
 
 @admin.register(CategoriesModel)

@@ -53,8 +53,13 @@ urlpatterns = [
             path('export/', transaction_views.api_export_csv, name='api_export_csv'),
             path('uncategorize/', transaction_views.api_uncategorize, name='api_uncategorize'),
             path('duplicates/', transaction_views.api_duplicates, name='api_duplicates'),
+            path('related/', transaction_views.api_related, name='api_related'),
+            path('<int:id>/tags/', transaction_views.api_transaction_tags, name='api_transaction_tags'),
+            path('<int:id>/tags/<int:tag_id>/', transaction_views.api_transaction_tag_delete,
+                 name='api_transaction_tag_delete'),
             path('<str:id>/', transaction_views.api_details, name='api_details'),
         ])),
+    path('api/tags/', include('tags.urls')),
     path('api/sections/',
          include([path('<str:section_id>', sections_views.api_update_section, name='api_update_section')]))
 ]

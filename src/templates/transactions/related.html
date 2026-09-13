@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Related Transactions - Capital Focus{% endblock %}
+
+{% block extra_css %}
+<style>
+    .related-group {
+        border-left: 4px solid #dee2e6;
+        padding-left: 0;
+        margin-bottom: 2.5rem;
+    }
+    .related-group-date-amount {
+        border-left-color: #0d6efd;
+    }
+    .related-group-shared-tag {
+        border-left-color: #198754;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="d-flex align-items-center mb-5 fade-in">
+    <a href="{% url 'transactions:index' %}" class="btn btn-outline-dark btn-sm rounded-circle me-4 shadow-sm"
+        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+        <i class="bi bi-arrow-left fs-5"></i>
+    </a>
+    <div>
+        <h2 class="fw-bold mb-0">Related Transactions</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'budgets:index' %}" class="text-decoration-none text-muted">Budgets</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'transactions:index' %}" class="text-decoration-none text-muted">Transactions</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Related</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="ms-auto">
+        <span id="relatedCount" class="badge bg-secondary rounded-pill px-3 py-2 fs-6">Loading...</span>
+    </div>
+</div>
+
+<!-- Content Area -->
+<div id="related-container" class="fade-in" style="animation-delay: 0.1s;">
+    <!-- Injected by related.js -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static 'scripts/transactions/related.js' %}"></script>
+{% endblock %}

@@ -5,6 +5,7 @@ from core.repositories.base import BaseRepository
 from transactions.models import TransactionsModel
 from budgets.models import BudgetsModel
 from sections.models import SectionsModel
+from tags.models import TagModel
 
 
 class TransactionsRepository(BaseRepository):
@@ -73,6 +74,68 @@ class TransactionsRepository(BaseRepository):
                 ).order_by('id').values('id', 'amount', 'commerce', 'date'))
             if transactions:
                 groups.append(transactions)
+
+        return groups
+
+    def list_related(self) -> list:
+        """Return groups of related transactions.
+
+        Grouping criteria:
+        1. Same calendar date and amount (reason: 'same_date_amount', tag: None).
+        2. Shared tag (reason: 'shared_tag', tag: {id, label}).
+        """
+        groups = []
+
+        # Part A: Same calendar date and amount
+        same_date_amount_keys = (
+            self.model.objects.annotate(day=TruncDate('date')).values('amount', 'day').annotate(
+                count=Count('id')).filter(count__gt=1))
+
+        for key in same_date_amount_keys:
+            qs = self.model.objects.annotate(day=TruncDate('date')).filter(
+                amount=key['amount'],
+                day=key['day'],
+            ).prefetch_related('tags').order_by('id')
+
+            txns = []
+            for t in qs:
+                txns.append({
+                    'id': t.id,
+                    'amount': t.amount,
+                    'commerce': t.commerce,
+                    'date': t.date,
+                    'tags': [tag.label for tag in t.tags.all()],
+                })
+
+            if len(txns) >= 2:
+                groups.append({
+                    'reason': 'same_date_amount',
+                    'tag': None,
+                    'transactions': txns,
+                })
+
+        # Part B: Shared tag
+        for tag in TagModel.objects.prefetch_related('transactions__tags').order_by('label'):
+            qs = tag.transactions.all().order_by('id')
+            txns = []
+            for t in qs:
+                txns.append({
+                    'id': t.id,
+                    'amount': t.amount,
+                    'commerce': t.commerce,
+                    'date': t.date,
+                    'tags': [t_tag.label for t_tag in t.tags.all()],
+                })
+
+            if len(txns) >= 2:
+                groups.append({
+                    'reason': 'shared_tag',
+                    'tag': {
+                        'id': tag.id,
+                        'label': tag.label
+                    },
+                    'transactions': txns,
+                })
 
         return groups
 
