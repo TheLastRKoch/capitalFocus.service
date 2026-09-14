@@ -9,7 +9,7 @@ class TransactionsModel(models.Model):
         ('Categorized', 'Categorized'),
         ('Uncategorized', 'Uncategorized'),
         ('Pending', 'Pending'),
-        ('Mock', 'Mock'),
+        ('Placeholder', 'Placeholder'),
         ('Suggested', 'Suggested'),
     ]
 
