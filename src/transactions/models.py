@@ -13,7 +13,7 @@ class TransactionsModel(models.Model):
         ('Suggested', 'Suggested'),
     ]
 
-    date = models.DateTimeField()
+    date = models.DateTimeField(null=True, blank=True)
     commerce = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     comments = models.CharField(max_length=255, null=True, blank=True)
