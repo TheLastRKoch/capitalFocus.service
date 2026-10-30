@@ -16,7 +16,6 @@ class GlobalManager extends BaseManager {
         this.#initAccordionChevrons();
         this.#setDefaultDate();
         this.#initEntryModals();
-        this.#initCategoryModals();
         this.#initSummaryModals();
     }
 
@@ -64,24 +63,6 @@ class GlobalManager extends BaseManager {
                 
                 this.getModal(document.getElementById('addEntryModal'))?.hide();
                 NotificationService.show('Entry added successfully!', 'success');
-            });
-        }
-    }
-
-    #initCategoryModals() {
-        const saveNewBtn = document.getElementById('saveNewCategoryBtn');
-        const newForm = document.getElementById('addCategoryForm');
-        if (saveNewBtn && newForm) {
-            saveNewBtn.addEventListener('click', () => {
-                if (!newForm.checkValidity()) {
-                    newForm.reportValidity();
-                    return;
-                }
-                const name = document.getElementById('newCategoryName').value;
-                NotificationService.show(`Category "${name}" created!`, 'success');
-                
-                newForm.reset();
-                this.getModal(document.getElementById('addCategoryModal'))?.hide();
             });
         }
     }
