@@ -18,7 +18,7 @@ This schema tracks financial budgets, hierarchical categories, and individual tr
 *High-level financial containers.*
 - `id`: Integer (Primary Key)
 - `label`: String (Budget name)
-- `user_id`: Integer (Foreign Key -> `auth.User.id`)
+- `user_id`: Integer (Foreign Key -> `auth.User.id`). New budgets created through `POST /api/budgets/` are assigned server-side to the account named by the `DEFAULT_BUDGET_OWNER_USERNAME` setting (default `rkoch`) until multi-user authentication exists. The owner is never accepted from the request body.
 - `status`: String ('Active', 'Inactive')
 - `projection`: Decimal (Total planned budget amount)
 - `created_at` / `updated_at`: DateTime

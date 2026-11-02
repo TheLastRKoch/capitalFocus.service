@@ -107,3 +107,7 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Temporary stopgap until multi-user authentication exists: new budgets are
+# assigned to this account. Override per environment when needed.
+DEFAULT_BUDGET_OWNER_USERNAME = env('DEFAULT_BUDGET_OWNER_USERNAME') or 'rkoch'
