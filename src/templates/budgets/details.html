@@ -124,10 +124,10 @@
             <div class="modal-body p-4">
                 <form id="addCategoryForm">
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold">NAME</label>
-                        <input type="text" class="form-control bg-light border-0" id="newCategoryName"
-                            list="datalistOptions" placeholder="Select or type a name..." required>
-                        <datalist id="datalistOptions"></datalist>
+                        <label for="newSectionCategory" class="form-label text-muted small fw-bold">SECTION</label>
+                        <select class="form-select bg-light border-0" id="newSectionCategory" required>
+                            <option value="" disabled selected>Choose a missing section...</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label text-muted small fw-bold">PROJECTION</label>

@@ -12,11 +12,27 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = json.loads(env("ALLOWED_HOSTS", '["*"]'))
+ALLOWED_HOSTS = [
+    host.removeprefix('http://').removeprefix('https://').rstrip('/')
+    for host in json.loads(env("ALLOWED_HOSTS", "[]"))
+]
 
-CSRF_TRUSTED_ORIGINS = json.loads(
-    env("CSRF_TRUSTED_ORIGINS", '["https://*.cloudshell.dev", "http://localhost:8080", "http://127.0.0.1:8080"]')
-)
+# The app runs behind TLS-terminating reverse proxies (e.g. the Cloud Shell
+# preview URL), so trust the forwarded protocol/host when resolving requests.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
+# Origins allowed to submit unsafe requests (POST/PUT/DELETE). Explicit config
+# wins; otherwise allow every configured host on both schemes so preview hosts
+# such as the Cloud Shell URL pass origin checking.
+CSRF_TRUSTED_ORIGINS = json.loads(env("CSRF_TRUSTED_ORIGINS", "[]"))
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = [
+        f'{scheme}://{host}'
+        for host in ALLOWED_HOSTS
+        if host and host != '*'
+        for scheme in ('https', 'http')
+    ]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
