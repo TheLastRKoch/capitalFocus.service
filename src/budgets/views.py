@@ -1,4 +1,6 @@
 import json
+import logging
+
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -6,7 +8,9 @@ from core.repositories.budgets import BudgetsRepository
 from core.repositories.sections import SectionsRepository
 from core.repositories.transactions import TransactionsRepository
 from core.repositories.categories import CategoriesRepository, SubcategoriesRepository
-from core.services.budgets import BudgetService
+from core.services.budgets import (BudgetOwnerConfigurationError, BudgetService, BudgetValidationError)
+
+logger = logging.getLogger(__name__)
 
 # Dependency Setup
 budgets_repo = BudgetsRepository()
@@ -39,8 +43,22 @@ def api_index(request):
     if request.method == 'GET':
         return JsonResponse(budgets_repo.all(), safe=False)
     if request.method == 'POST':
-        data = json.loads(request.body)
-        return JsonResponse(budget_service.create_budget(data), status=201)
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({'error': 'Request body must be valid JSON.'}, status=400)
+
+        try:
+            created = budget_service.create_budget(data)
+        except BudgetValidationError as exc:
+            return JsonResponse({'error': str(exc)}, status=400)
+        except BudgetOwnerConfigurationError as exc:
+            return JsonResponse({'error': str(exc)}, status=503)
+        except Exception:
+            logger.exception('Unexpected error creating budget')
+            return JsonResponse({'error': 'Unable to create budget.'}, status=500)
+
+        return JsonResponse(created, status=201)
     return HttpResponse(status=405)
 
 

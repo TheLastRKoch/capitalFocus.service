@@ -88,7 +88,7 @@ class BudgetManager extends BaseManager {
             // Refresh data
             await this.init();
         } catch (error) {
-            NotificationService.show('Failed to create budget.', 'danger');
+            NotificationService.show(error.message || 'Failed to create budget.', 'danger');
         }
     }
 

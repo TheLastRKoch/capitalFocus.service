@@ -78,8 +78,8 @@ export class ApiService {
             });
 
             if (!response.ok) {
-                const error = await response.json().catch(() => ({ message: 'Unknown error' }));
-                throw new Error(error.message || `HTTP error! status: ${response.status}`);
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || error.message || `HTTP error! status: ${response.status}`);
             }
 
             return await response.json();
