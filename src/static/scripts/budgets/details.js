@@ -8,6 +8,7 @@ import { ApiService, Formatter, NotificationService, BaseManager } from '../app.
 class BudgetDetailsManager extends BaseManager {
     #budgetId = null;
     #budget = null;
+    #isRefreshing = false;
     #elements = {
         title: document.getElementById('budgetTitle'),
         projection: document.getElementById('projectionValue'),
@@ -31,7 +32,7 @@ class BudgetDetailsManager extends BaseManager {
     }
 
     #setupEventListeners() {
-        this.#elements.refreshBtn?.addEventListener('click', () => this.init());
+        this.#elements.refreshBtn?.addEventListener('click', () => this.refreshData({ isInitial: false }));
 
         if (this.#elements.addForm) {
             this.#elements.addForm.addEventListener('submit', async (e) => {
@@ -73,8 +74,8 @@ class BudgetDetailsManager extends BaseManager {
             this.#elements.addForm.reset();
             this.getModal(this.#elements.addModal)?.hide();
 
-            // Refresh data
-            await this.init();
+            // Refresh data smoothly in-place
+            await this.refreshData({ isInitial: false });
         } catch (error) {
             NotificationService.show('Failed to create section.', 'danger');
         }
@@ -88,8 +89,23 @@ class BudgetDetailsManager extends BaseManager {
     }
 
     async init() {
-        this.showLoader(this.#elements.loader);
-        if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+        await this.refreshData({ isInitial: true });
+    }
+
+    async refreshData({ isInitial = false } = {}) {
+        if (this.#isRefreshing) return;
+        this.#isRefreshing = true;
+
+        const refreshIcon = this.#elements.refreshBtn?.querySelector('i');
+        if (!isInitial && this.#elements.refreshBtn) {
+            this.#elements.refreshBtn.disabled = true;
+            refreshIcon?.classList.add('spin-animation');
+        }
+
+        if (isInitial) {
+            this.showLoader(this.#elements.loader);
+            if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+        }
 
         try {
             if (!this.#budgetId) {
@@ -105,9 +121,21 @@ class BudgetDetailsManager extends BaseManager {
                 this.renderEmpty(this.#elements.accordion, 'Please create a budget first.');
             }
         } catch (error) {
-            this.renderError(this.#elements.accordion, 'Failed to load budget details.');
+            if (isInitial) {
+                this.renderError(this.#elements.accordion, 'Failed to load budget details.');
+            } else {
+                console.error('Failed to refresh budget details:', error);
+                NotificationService.show('Failed to refresh data.', 'danger');
+            }
         } finally {
-            this.hideLoader(this.#elements.loader);
+            if (isInitial) {
+                this.hideLoader(this.#elements.loader);
+            }
+            if (!isInitial && this.#elements.refreshBtn) {
+                this.#elements.refreshBtn.disabled = false;
+                refreshIcon?.classList.remove('spin-animation');
+            }
+            this.#isRefreshing = false;
         }
     }
 
@@ -203,7 +231,12 @@ class BudgetDetailsManager extends BaseManager {
             return;
         }
 
-        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
+        // Capture open collapse section IDs before re-rendering
+        const openCollapseIds = new Set(
+            Array.from(this.#elements.accordion?.querySelectorAll('.collapse.show') || []).map(el => el.id)
+        );
+
+        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index, openCollapseIds)).join('');
         if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
 
         // Setup event listeners for balance buttons
@@ -216,12 +249,22 @@ class BudgetDetailsManager extends BaseManager {
         balanceButtons?.forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                if (btn.disabled) return;
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+                icon?.classList.add('spin-animation');
+
                 const sectionId = btn.dataset.sectionId;
                 const budgetId = btn.dataset.budgetId;
                 const currentProjection = parseFloat(btn.dataset.projection);
                 const remaining = parseFloat(btn.dataset.remaining);
 
-                await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
+                try {
+                    await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
+                } finally {
+                    btn.disabled = false;
+                    icon?.classList.remove('spin-animation');
+                }
             });
         });
     }
@@ -237,7 +280,7 @@ class BudgetDetailsManager extends BaseManager {
             });
 
             NotificationService.show('Section balanced successfully!', 'success');
-            await this.init();
+            await this.refreshData({ isInitial: false });
         } catch (error) {
             NotificationService.show('Failed to balance section.', 'danger');
         }
@@ -256,18 +299,19 @@ class BudgetDetailsManager extends BaseManager {
         }
     }
 
-    #createSectionHtml(section, index) {
+    #createSectionHtml(section, index, openCollapseIds = new Set()) {
         const transactions = section.transactions || [];
         const remaining = section.remaining !== undefined ? section.remaining : 0;
-        const collapseId = `categoryCollapse${index}`;
+        const collapseId = `categoryCollapse_${section.id}`;
         const sectionId = section.id;
+        const isOpen = openCollapseIds.has(collapseId) || openCollapseIds.has(`categoryCollapse${index}`);
 
         return `
             <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex align-items-center justify-content-between">
-                        <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
-                            data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                        <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle ${isOpen ? '' : 'collapsed'}"
+                            data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isOpen ? 'true' : 'false'}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
                             <span class="fw-medium">${Formatter.escapeHtml(section.label)}</span>
                             <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
@@ -285,7 +329,7 @@ class BudgetDetailsManager extends BaseManager {
                         </button>
                     </div>
                 </div>
-                <div id="${collapseId}" class="collapse">
+                <div id="${collapseId}" class="collapse ${isOpen ? 'show' : ''}">
                     <div class="card-body pt-0">
                         <div class="table-responsive">
                             <table class="table table-borderless mb-0">
