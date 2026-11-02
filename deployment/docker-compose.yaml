@@ -1,16 +1,18 @@
-version: '3.8'
-
 services:
-  web:
+  service:
     build:
       context: ..
       dockerfile: deployment/Dockerfile
+    container_name: capital-focus-service
     ports:
-      - "8080:8080"
+      - "9003:8080"
     env_file:
       - ../.env
-    environment:
-      - DJANGO_SETTINGS_MODULE=core.settings
-      - DEBUG=1
     volumes:
       - ../src:/app/src
+    networks:
+      - rklan
+
+networks:
+  rklan:
+    external: true

@@ -17,18 +17,16 @@ transactions_repo = TransactionsRepository()
 
 def index(request):
     """Render all transactions"""
-    return render(request, 'transactions/index.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/index.html', {'active_page': 'transactions'})
 
 
 def uncategorize(request):
     """Render the uncategorized transactions page."""
-    return render(request, 'transactions/uncategorize.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/uncategorize.html', {'active_page': 'transactions'})
+
 
 def import_transactions(request):
-    return render(request, 'transactions/import.html',
-                  {'active_page': 'transactions'})
+    return render(request, 'transactions/import.html', {'active_page': 'transactions'})
 
 
 # --- API Views ---
@@ -48,6 +46,7 @@ def api_list(request):
         return JsonResponse(transactions_repo.list_paginated(limit, offset))
 
     if request.method == 'POST':
+        date_format = '%Y-%m-%d %H:%M'
         try:
             data = json.loads(request.body)
             if not isinstance(data, list):
@@ -56,45 +55,123 @@ def api_list(request):
             # Get valid field names for the model
             valid_fields = {f.name for f in transactions_repo.model._meta.get_fields() if not f.auto_created}
             # Also include the _id versions of foreign keys
-            valid_fields.update({f.name + '_id' for f in transactions_repo.model._meta.get_fields() if f.is_relation and not f.auto_created})
+            valid_fields.update({
+                f.name + '_id'
+                for f in transactions_repo.model._meta.get_fields()
+                if f.is_relation and not f.auto_created
+            })
 
             # Cache for label to ID resolution to avoid excessive DB queries
             budget_cache = {}
             subcategory_cache = {}
 
-            results = []
-            for item in data:
-                # Map 'budget' to 'budgets_id' if provided
-                if 'budget' in item:
-                    val = item.pop('budget')
-                    if val:
-                        if isinstance(val, str) and not str(val).isdigit():
-                            if val not in budget_cache:
-                                b = BudgetsModel.objects.filter(label__iexact=val).first()
-                                budget_cache[val] = b.id if b else None
-                            item['budgets_id'] = budget_cache[val]
-                        else:
-                            item['budgets_id'] = val
-                
-                # Map 'subcategory' to 'subcategory_id' if provided
-                if 'subcategory' in item:
-                    val = item.pop('subcategory')
-                    if val:
-                        if isinstance(val, str) and not str(val).isdigit():
-                            if val not in subcategory_cache:
-                                s = SubcategoriesModel.objects.filter(label__iexact=val).first()
-                                subcategory_cache[val] = s.id if s else None
-                            item['subcategory_id'] = subcategory_cache[val]
-                        else:
-                            item['subcategory_id'] = val
+            created_items = []
+            existing_items = []
+            error_items = []
+            seen_in_batch = set()
 
-                # Filter item to only include valid fields
-                filtered_item = {k: v for k, v in item.items() if k in valid_fields}
-                
-                if filtered_item:
-                    results.append(transactions_repo.create(filtered_item))
+            for item_idx, raw_item in enumerate(data):
+                if not isinstance(raw_item, dict):
+                    error_items.append({
+                        'index': item_idx,
+                        'item': raw_item,
+                        'error': 'Item must be a dictionary'
+                    })
+                    continue
 
-            return JsonResponse({'status': 'success', 'created': len(results)}, status=201)
+                item = dict(raw_item)
+                try:
+                    parsed_date = None
+                    if 'date' in item:
+                        val = item.pop('date')
+                        if val:
+                            if isinstance(val, datetime):
+                                parsed_date = val
+                            else:
+                                parsed_date = datetime.strptime(str(val).strip(), date_format)
+                            item['date'] = parsed_date
+
+                    commerce = item.get('commerce')
+                    amount = item.get('amount')
+
+                    # Check for duplicates if identifying fields are present
+                    if parsed_date is not None and commerce is not None and amount is not None:
+                        batch_key = (parsed_date.isoformat(), str(commerce).strip(), str(amount).strip())
+                        if batch_key in seen_in_batch or transactions_repo.exists_by_date_commerce_amount(
+                                parsed_date, commerce, amount):
+                            existing_items.append({
+                                'index': item_idx,
+                                'date': parsed_date.strftime(date_format) if parsed_date else None,
+                                'commerce': commerce,
+                                'amount': str(amount),
+                            })
+                            seen_in_batch.add(batch_key)
+                            continue
+                        seen_in_batch.add(batch_key)
+
+                    # Map 'budget' to 'budgets_id' if provided
+                    if 'budget' in item:
+                        val = item.pop('budget')
+                        if val:
+                            if isinstance(val, str) and not str(val).isdigit():
+                                if val not in budget_cache:
+                                    b = BudgetsModel.objects.filter(label__iexact=val).first()
+                                    budget_cache[val] = b.id if b else None
+                                item['budgets_id'] = budget_cache[val]
+                            else:
+                                item['budgets_id'] = val
+
+                    # Map 'subcategory' to 'subcategory_id' if provided
+                    if 'subcategory' in item:
+                        val = item.pop('subcategory')
+                        if val:
+                            if isinstance(val, str) and not str(val).isdigit():
+                                if val not in subcategory_cache:
+                                    s = SubcategoriesModel.objects.filter(label__iexact=val).first()
+                                    subcategory_cache[val] = s.id if s else None
+                                item['subcategory_id'] = subcategory_cache[val]
+                            else:
+                                item['subcategory_id'] = val
+
+                    # Evaluate status: default to 'Uncategorized' if omitted, null, empty, or whitespace-only
+                    raw_status = item.get('status')
+                    if raw_status is None or (isinstance(raw_status, str) and not raw_status.strip()):
+                        item['status'] = 'Uncategorized'
+                    else:
+                        item['status'] = str(raw_status).strip()
+
+                    # Filter item to only include valid fields
+                    filtered_item = {k: v for k, v in item.items() if k in valid_fields}
+
+                    if filtered_item:
+                        created_record = transactions_repo.create(filtered_item)
+                        created_items.append(created_record)
+                    else:
+                        error_items.append({
+                            'index': item_idx,
+                            'item': raw_item,
+                            'error': 'No valid fields provided'
+                        })
+                except Exception as item_err:
+                    error_items.append({
+                        'index': item_idx,
+                        'item': raw_item,
+                        'error': str(item_err)
+                    })
+
+            return JsonResponse({
+                'status': 'success',
+                'created': len(created_items),
+                'summary': {
+                    'total': len(data),
+                    'created_count': len(created_items),
+                    'existing_count': len(existing_items),
+                    'error_count': len(error_items),
+                    'created': created_items,
+                    'existing': existing_items,
+                    'errors': error_items
+                }
+            }, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -109,8 +186,8 @@ def api_export_csv(request):
     writer = csv.writer(response)
     # Header with all columns
     writer.writerow([
-        'date', 'commerce', 'amount', 'location', 'card', 'authorization',
-        'reference', 'transactionType', 'subcategory', 'status', 'budget'
+        'date', 'commerce', 'amount', 'location', 'card', 'authorization', 'reference', 'transactionType',
+        'subcategory', 'status', 'budget'
     ])
 
     transactions = transactions_repo.all()
@@ -124,7 +201,7 @@ def api_export_csv(request):
             else:
                 # If it's a datetime object, format it
                 date_value = date_value.strftime('%Y-%m-%d %H:%M:%S')
-        
+
         writer.writerow([
             date_value,
             t.get('commerce'),
@@ -148,6 +225,12 @@ def api_uncategorize(request):
     return HttpResponse(status=405)
 
 
+def api_list_missing_sections(request, id):
+    if request.method == 'GET':
+        return JsonResponse(transactions_repo.list_missing_sections(id), safe=False)
+    return HttpResponse(status=405)
+
+
 @csrf_exempt
 def api_details(request, id):
     if request.method == 'PUT':
@@ -166,3 +249,89 @@ def api_details(request, id):
         }
         return JsonResponse(transactions_repo.update(id, fields))
     return HttpResponse(status=405)
+
+
+def api_duplicates(request):
+    """Return groups of duplicate transactions (same amount, commerce, and calendar date)."""
+    if request.method == 'GET':
+        groups = transactions_repo.list_duplicates()
+        # Serialize Decimal and datetime values to JSON-safe strings
+        serialized = []
+        for group in groups:
+            serialized_group = []
+            for t in group:
+                serialized_group.append({
+                    'id': t['id'],
+                    'amount': str(t['amount']),
+                    'commerce': t['commerce'],
+                    'date': t['date'].isoformat() if hasattr(t['date'], 'isoformat') else str(t['date']),
+                })
+            serialized.append(serialized_group)
+        return JsonResponse({'groups': serialized})
+    return HttpResponse(status=405)
+
+
+def duplicates(request):
+    """Render the duplicate transactions detection page."""
+    return render(request, 'transactions/duplicates.html', {'active_page': 'transactions'})
+
+
+@csrf_exempt
+def api_transaction_tags(request, id):
+    """Assign tags to a transaction (POST)."""
+    if request.method == 'POST':
+        try:
+            transaction = TransactionsModel.objects.filter(pk=id).first()
+            if not transaction:
+                return JsonResponse({'error': 'Transaction not found.'}, status=404)
+            data = json.loads(request.body)
+            tag_ids = data.get('tag_ids', [])
+            transaction.tags.add(*tag_ids)
+            tags = list(transaction.tags.values('id', 'label'))
+            return JsonResponse({'tags': tags})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return HttpResponse(status=405)
+
+
+@csrf_exempt
+def api_transaction_tag_delete(request, id, tag_id):
+    """Remove a single tag from a transaction (DELETE)."""
+    if request.method == 'DELETE':
+        transaction = TransactionsModel.objects.filter(pk=id).first()
+        if not transaction:
+            return JsonResponse({'error': 'Transaction not found.'}, status=404)
+        if not transaction.tags.filter(pk=tag_id).exists():
+            return JsonResponse({'error': 'Tag not associated with this transaction.'}, status=404)
+        transaction.tags.remove(tag_id)
+        return HttpResponse(status=204)
+    return HttpResponse(status=405)
+
+
+def api_related(request):
+    """Return groups of related transactions (same date+amount OR shared tag)."""
+    if request.method == 'GET':
+        groups = transactions_repo.list_related()
+        serialized = []
+        for group in groups:
+            serialized_txns = []
+            for t in group['transactions']:
+                serialized_txns.append({
+                    'id': t['id'],
+                    'amount': str(t['amount']),
+                    'commerce': t['commerce'],
+                    'date': t['date'].isoformat() if hasattr(t['date'], 'isoformat') else str(t['date']),
+                    'tags': t.get('tags', []),
+                })
+            serialized.append({
+                'reason': group['reason'],
+                'tag': group['tag'],
+                'transactions': serialized_txns,
+            })
+        return JsonResponse({'groups': serialized})
+    return HttpResponse(status=405)
+
+
+def related(request):
+    """Render the related transactions page."""
+    return render(request, 'transactions/related.html', {'active_page': 'transactions'})

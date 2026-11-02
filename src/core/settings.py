@@ -1,4 +1,6 @@
 import os
+import json
+from os import getenv as env
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -10,7 +12,11 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = json.loads(env("ALLOWED_HOSTS", '["*"]'))
+
+CSRF_TRUSTED_ORIGINS = json.loads(
+    env("CSRF_TRUSTED_ORIGINS", '["https://*.cloudshell.dev", "http://localhost:8080", "http://127.0.0.1:8080"]')
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,6 +29,7 @@ INSTALLED_APPS = [
     'sections',
     'budgets',
     'transactions',
+    'tags',
     'core',
 ]
 
@@ -56,29 +63,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DATABASES = json.loads(env("DB_CONNECTION"))
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME':
-        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME':
-        'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
     },
     {
-        'NAME':
-        'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
-        'NAME':
-        'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -93,12 +91,3 @@ STATICFILES_DIRS = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Teable Settings (Deprecated)
-# These were used for the external Teable integration.
-# Keeping them as comments for reference during migration if needed.
-# TEABLE_URL = os.environ.get('TEABLE_URL', 'https://app.teable.ai')
-# TEABLE_API_TOKEN = os.environ.get('TEABLE_API_TOKEN')
-# TEABLE_TRANSACTIONS = os.environ.get('TEABLE_TRANSACTIONS')
-# TEABLE_BUDGETS = os.environ.get('TEABLE_BUDGETS')
-# TEABLE_SECTIONS = os.environ.get('TEABLE_SECTIONS')

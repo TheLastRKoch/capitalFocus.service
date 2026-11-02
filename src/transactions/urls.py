@@ -6,4 +6,6 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('uncategorize/', views.uncategorize, name='uncategorize'),
     path('import/', views.import_transactions, name='import'),
+    path('duplicates/', views.duplicates, name='duplicates'),
+    path('related/', views.related, name='related'),
 ]

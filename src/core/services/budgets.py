@@ -7,10 +7,8 @@ from core.repositories.categories import CategoriesRepository, SubcategoriesRepo
 class BudgetService:
     """Service for orchestrating budget-related data operations."""
 
-    def __init__(self, budgets_repo: BudgetsRepository,
-                 sections_repo: SectionsRepository,
-                 transactions_repo: TransactionsRepository,
-                 categories_repo: CategoriesRepository,
+    def __init__(self, budgets_repo: BudgetsRepository, sections_repo: SectionsRepository,
+                 transactions_repo: TransactionsRepository, categories_repo: CategoriesRepository,
                  subcategories_repo: SubcategoriesRepository) -> None:
         self.budgets_repo = budgets_repo
         self.sections_repo = sections_repo
@@ -22,27 +20,31 @@ class BudgetService:
         """Retrieve sections with their associated transactions for a given budget."""
 
         section_transactions = []
+        budget_spent = 0
+        budget_encumbered = 0
         transactions = self.transactions_repo.get_by_budget_id(budget_id)
         sections = self.sections_repo.get_by_budget_id(budget_id)
 
         for section in sections:
             section_txns = [
-                transaction for transaction in transactions if transaction.get(
-                    'subcategory__parent_id') == section.get('category_id')
+                transaction for transaction in transactions
+                if transaction.get('subcategory__parent_id') == section.get('category_id')
             ]
 
             # Calculate remaining: projection - sum of all transactions in this section
-            total_spent = sum(t.get('amount', 0) for t in section_txns)
+            spent = sum(t.get('amount', 0) for t in section_txns)
             projection = section.get('projection') or 0
-            remaining = projection - total_spent
+            remaining = projection - spent
+            budget_encumbered += projection
+            budget_spent += spent
 
             section['transactions'] = section_txns
-            section['total_spent'] = total_spent
+            section['total_spent'] = spent
             section['remaining'] = remaining
 
             section_transactions.append(section)
 
-        return section_transactions
+        return section_transactions, budget_encumbered, budget_spent
 
     def get_by_id(self, budget_id: str) -> dict:
         """Retrieve a budget by its ID."""

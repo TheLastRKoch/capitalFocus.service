@@ -8,6 +8,7 @@ import { ApiService, Formatter, NotificationService, BaseManager } from '../app.
 class BudgetDetailsManager extends BaseManager {
     #budgetId = null;
     #budget = null;
+    #isRefreshing = false;
     #elements = {
         title: document.getElementById('budgetTitle'),
         projection: document.getElementById('projectionValue'),
@@ -17,7 +18,8 @@ class BudgetDetailsManager extends BaseManager {
         loader: document.getElementById('categoriesLoader'),
         refreshBtn: document.getElementById('refreshSections'),
         addForm: document.getElementById('addCategoryForm'),
-        addModal: document.getElementById('addCategoryModal')
+        addModal: document.getElementById('addCategoryModal'),
+        datalist: document.getElementById('datalistOptions')
     };
 
     constructor() {
@@ -28,7 +30,7 @@ class BudgetDetailsManager extends BaseManager {
     }
 
     #setupEventListeners() {
-        this.#elements.refreshBtn?.addEventListener('click', () => this.init());
+        this.#elements.refreshBtn?.addEventListener('click', () => this.refreshData({ isInitial: false }));
 
         if (this.#elements.addForm) {
             this.#elements.addForm.addEventListener('submit', async (e) => {
@@ -61,8 +63,8 @@ class BudgetDetailsManager extends BaseManager {
             this.#elements.addForm.reset();
             this.getModal(this.#elements.addModal)?.hide();
 
-            // Refresh data
-            await this.init();
+            // Refresh data smoothly in-place
+            await this.refreshData({ isInitial: false });
         } catch (error) {
             NotificationService.show('Failed to create section.', 'danger');
         }
@@ -70,29 +72,86 @@ class BudgetDetailsManager extends BaseManager {
 
     #getBudgetIdFromUrl() {
         const path = window.location.pathname;
-        const parts = path.split('/');
+        const parts = path.split('/').filter(Boolean);
         // Expected format /budgets/ID
-        return parts.at(-1) !== 'budgets' ? parts.at(-1) : null;
+        return parts.length > 0 && parts.at(-1) !== 'budgets' ? parts.at(-1) : null;
     }
 
     async init() {
-        this.showLoader(this.#elements.loader);
-        if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+        await this.refreshData({ isInitial: true });
+    }
+
+    async refreshData({ isInitial = false } = {}) {
+        if (this.#isRefreshing) return;
+        this.#isRefreshing = true;
+
+        const refreshIcon = this.#elements.refreshBtn?.querySelector('i');
+        if (!isInitial && this.#elements.refreshBtn) {
+            this.#elements.refreshBtn.disabled = true;
+            refreshIcon?.classList.add('spin-animation');
+        }
+
+        if (isInitial) {
+            this.showLoader(this.#elements.loader);
+            if (this.#elements.accordion) this.#elements.accordion.innerHTML = '';
+        }
 
         try {
             if (!this.#budgetId) {
                 await this.#fetchActiveBudget();
             }
-            
+
             if (this.#budgetId) {
-                await this.#fetchBudgetDetails();
+                await Promise.all([
+                    this.#fetchBudgetDetails(),
+                    this.#fetchMissingSections()
+                ]);
             } else {
                 this.renderEmpty(this.#elements.accordion, 'Please create a budget first.');
             }
         } catch (error) {
-            this.renderError(this.#elements.accordion, 'Failed to load budget details.');
+            if (isInitial) {
+                this.renderError(this.#elements.accordion, 'Failed to load budget details.');
+            } else {
+                console.error('Failed to refresh budget details:', error);
+                NotificationService.show('Failed to refresh data.', 'danger');
+            }
         } finally {
-            this.hideLoader(this.#elements.loader);
+            if (isInitial) {
+                this.hideLoader(this.#elements.loader);
+            }
+            if (!isInitial && this.#elements.refreshBtn) {
+                this.#elements.refreshBtn.disabled = false;
+                refreshIcon?.classList.remove('spin-animation');
+            }
+            this.#isRefreshing = false;
+        }
+    }
+
+    async #fetchMissingSections() {
+        if (!this.#budgetId || !this.#elements.datalist) return;
+        try {
+            const missingSections = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/missing_sections/`);
+            const dropdownMenu = document.getElementById('missing-sections-menu');
+
+            // Clear existing static placeholder items (Girl, House)
+            dropdownMenu.innerHTML = '';
+
+            // Loop through each section and create dropdown items
+            missingSections.forEach(section => {
+                const li = document.createElement('li');
+
+                const a = document.createElement('a');
+                a.className = 'dropdown-item';
+                a.href = `#section-${section.id}`; // Or any target URL you need
+                a.textContent = section.label;
+                a.dataset.id = section.id; // Optional: stores the ID for click events
+
+                li.appendChild(a);
+                dropdownMenu.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Failed to fetch missing sections:', error);
         }
     }
 
@@ -108,77 +167,98 @@ class BudgetDetailsManager extends BaseManager {
         this.#render();
     }
 
-     #render() {
-         const budget = this.#budget;
-         if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
-         if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
-         
-         const sections = budget.sections || [];
-         if (sections.length === 0) {
-             this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
-             return;
-         }
+    #render() {
+        const budget = this.#budget;
+        if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
+        if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
 
-         const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index)).join('');
-         if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
-         
-         // Setup event listeners for balance buttons
-         this.#setupBalanceButtons();
-         this.#updateOverview();
-     }
+        const sections = budget.sections || [];
+        if (sections.length === 0) {
+            this.renderEmpty(this.#elements.accordion, 'No sections found for this budget.');
+            return;
+        }
 
-     #setupBalanceButtons() {
-         const balanceButtons = this.#elements.accordion?.querySelectorAll('[data-balance-btn]');
-         balanceButtons?.forEach(btn => {
-             btn.addEventListener('click', async (e) => {
-                 e.preventDefault();
-                 const sectionId = btn.dataset.sectionId;
-                 const budgetId = btn.dataset.budgetId;
-                 const currentProjection = parseFloat(btn.dataset.projection);
-                 const remaining = parseFloat(btn.dataset.remaining);
-                 
-                 await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
-             });
-         });
-     }
+        // Capture open collapse section IDs before re-rendering
+        const openCollapseIds = new Set(
+            Array.from(this.#elements.accordion?.querySelectorAll('.collapse.show') || []).map(el => el.id)
+        );
 
-     async #handleBalanceSection(budgetId, sectionId, currentProjection, remaining) {
-         // If remaining is negative, multiply by -1 to get positive value
-         const newProjection = remaining < 0 ? currentProjection + (remaining * -1) : remaining;
-         
-         try {
-             await ApiService.fetchJson(`/api/sections/${sectionId}`, {
-                 method: 'PUT',
-                 body: JSON.stringify({ projection: newProjection })
-             });
-             
-             NotificationService.show('Section balanced successfully!', 'success');
-             await this.init();
-         } catch (error) {
-             NotificationService.show('Failed to balance section.', 'danger');
-         }
-     }
+        const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index, openCollapseIds)).join('');
+        if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
+
+        // Setup event listeners for balance buttons
+        this.#setupBalanceButtons();
+        this.#updateOverview();
+    }
+
+    #setupBalanceButtons() {
+        const balanceButtons = this.#elements.accordion?.querySelectorAll('[data-balance-btn]');
+        balanceButtons?.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if (btn.disabled) return;
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+                icon?.classList.add('spin-animation');
+
+                const sectionId = btn.dataset.sectionId;
+                const budgetId = btn.dataset.budgetId;
+                const currentProjection = parseFloat(btn.dataset.projection);
+                const remaining = parseFloat(btn.dataset.remaining);
+
+                try {
+                    await this.#handleBalanceSection(budgetId, sectionId, currentProjection, remaining);
+                } finally {
+                    btn.disabled = false;
+                    icon?.classList.remove('spin-animation');
+                }
+            });
+        });
+    }
+
+    async #handleBalanceSection(budgetId, sectionId, currentProjection, remaining) {
+        // If remaining is negative, multiply by -1 to get positive value
+        const newProjection = remaining < 0 ? currentProjection + (remaining * -1) : remaining;
+
+        try {
+            await ApiService.fetchJson(`/api/sections/${sectionId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ projection: newProjection })
+            });
+
+            NotificationService.show('Section balanced successfully!', 'success');
+            await this.refreshData({ isInitial: false });
+        } catch (error) {
+            NotificationService.show('Failed to balance section.', 'danger');
+        }
+    }
 
     #updateOverview() {
-        const totalSectionProjection = (this.#budget.sections || []).reduce((acc, sec) => acc + (sec.projection || 0), 0);
+        let totalSectionProjection = 0
+        this.#budget.sections.forEach(function (section) {
+            totalSectionProjection += parseFloat(section.projection)
+        })
+
+
         if (this.#elements.remaining) {
             const available = (this.#budget.projection || 0) - totalSectionProjection;
             this.#elements.remaining.textContent = Formatter.formatCurrency(available);
         }
     }
 
-    #createSectionHtml(section, index) {
+    #createSectionHtml(section, index, openCollapseIds = new Set()) {
         const transactions = section.transactions || [];
         const remaining = section.remaining !== undefined ? section.remaining : 0;
-        const collapseId = `categoryCollapse${index}`;
+        const collapseId = `categoryCollapse_${section.id}`;
         const sectionId = section.id;
-        
+        const isOpen = openCollapseIds.has(collapseId) || openCollapseIds.has(`categoryCollapse${index}`);
+
         return `
             <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex align-items-center justify-content-between">
-                        <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle collapsed"
-                            data-bs-toggle="collapse" data-bs-target="#${collapseId}">
+                        <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle ${isOpen ? '' : 'collapsed'}"
+                            data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isOpen ? 'true' : 'false'}">
                             <i class="bi bi-chevron-down accordion-chevron"></i>
                             <span class="fw-medium">${Formatter.escapeHtml(section.label)}</span>
                             <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
@@ -196,7 +276,7 @@ class BudgetDetailsManager extends BaseManager {
                         </button>
                     </div>
                 </div>
-                <div id="${collapseId}" class="collapse">
+                <div id="${collapseId}" class="collapse ${isOpen ? 'show' : ''}">
                     <div class="card-body pt-0">
                         <div class="table-responsive">
                             <table class="table table-borderless mb-0">
@@ -208,16 +288,16 @@ class BudgetDetailsManager extends BaseManager {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${transactions.length > 0 
-                                        ? transactions.map(t => `
+                                    ${transactions.length > 0
+                ? transactions.map(t => `
                                             <tr class="align-middle">
                                                 <td class="text-muted border-end py-3">${Formatter.formatDate(t.date)}</td>
                                                 <td class="text-dark fw-bold border-end py-3">${Formatter.formatCurrency(t.amount)}</td>
                                                 <td class="text-muted py-3">${Formatter.escapeHtml(t.commerce)}</td>
                                             </tr>
                                         `).join('')
-                                        : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'
-                                    }
+                : '<tr><td colspan="3" class="text-center py-3 text-muted">No entries</td></tr>'
+            }
                                 </tbody>
                             </table>
                         </div>
@@ -227,11 +307,6 @@ class BudgetDetailsManager extends BaseManager {
         `;
     }
 }
-
-// Initialize manager on DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-    new BudgetDetailsManager();
-});
 
 // Initialize manager on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

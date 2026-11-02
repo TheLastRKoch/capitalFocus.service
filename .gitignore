@@ -1,5 +1,7 @@
 # IDE
 .vscode
+db.sqlite3
+.agents/mcp_config.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -86,6 +88,7 @@ celerybeat-schedule
 
 # dotenv
 .env
+.env*
 .venv
 
 # virtualenv
