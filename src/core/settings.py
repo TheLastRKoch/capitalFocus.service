@@ -12,7 +12,11 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 DEBUG = True
 
-ALLOWED_HOSTS = json.loads(env("ALLOWED_HOSTS"))
+ALLOWED_HOSTS = json.loads(env("ALLOWED_HOSTS", '["*"]'))
+
+CSRF_TRUSTED_ORIGINS = json.loads(
+    env("CSRF_TRUSTED_ORIGINS", '["https://*.cloudshell.dev", "http://localhost:8080", "http://127.0.0.1:8080"]')
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
