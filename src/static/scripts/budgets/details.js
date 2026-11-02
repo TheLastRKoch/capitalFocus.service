@@ -19,7 +19,9 @@ class BudgetDetailsManager extends BaseManager {
         refreshBtn: document.getElementById('refreshSections'),
         addForm: document.getElementById('addCategoryForm'),
         addModal: document.getElementById('addCategoryModal'),
-        datalist: document.getElementById('datalistOptions')
+        sectionSelect: document.getElementById('newSectionCategory'),
+        projectionInput: document.getElementById('newCategoryBudget'),
+        saveBtn: document.getElementById('saveNewCategoryBtn')
     };
 
     constructor() {
@@ -41,18 +43,27 @@ class BudgetDetailsManager extends BaseManager {
     }
 
     async #handleCreateSection() {
-        const labelInput = document.getElementById('newCategoryName');
-        const projectionInput = document.getElementById('newCategoryBudget');
+        const select = this.#elements.sectionSelect;
+        const projectionInput = this.#elements.projectionInput;
 
-        if (!labelInput || !projectionInput || !this.#budgetId) return;
+        if (!select || !projectionInput || !this.#budgetId) return;
+
+        const selectedOption = select.selectedOptions[0];
+        const categoryId = Number.parseInt(select.value, 10);
+        const projection = Number.parseFloat(projectionInput.value);
+
+        if (!selectedOption || !Number.isFinite(categoryId) || !Number.isFinite(projection)) {
+            return;
+        }
 
         const payload = {
-            label: labelInput.value,
-            projection: parseFloat(projectionInput.value)
+            label: selectedOption.textContent.trim(),
+            category_id: categoryId,
+            projection
         };
 
         try {
-            await ApiService.fetchJson(`/api/sections/${this.#budgetId}/sections`, {
+            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections/`, {
                 method: 'POST',
                 body: JSON.stringify(payload)
             });
@@ -129,30 +140,72 @@ class BudgetDetailsManager extends BaseManager {
     }
 
     async #fetchMissingSections() {
-        if (!this.#budgetId || !this.#elements.datalist) return;
+        if (!this.#budgetId) return;
+
+        let missingSections = [];
         try {
-            const missingSections = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/missing_sections/`);
-            const dropdownMenu = document.getElementById('missing-sections-menu');
-
-            // Clear existing static placeholder items (Girl, House)
-            dropdownMenu.innerHTML = '';
-
-            // Loop through each section and create dropdown items
-            missingSections.forEach(section => {
-                const li = document.createElement('li');
-
-                const a = document.createElement('a');
-                a.className = 'dropdown-item';
-                a.href = `#section-${section.id}`; // Or any target URL you need
-                a.textContent = section.label;
-                a.dataset.id = section.id; // Optional: stores the ID for click events
-
-                li.appendChild(a);
-                dropdownMenu.appendChild(li);
-            });
+            missingSections = await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/missing_sections/`);
         } catch (error) {
             console.error('Failed to fetch missing sections:', error);
         }
+
+        this.#renderSectionOptions(missingSections);
+        this.#renderMissingSectionsMenu(missingSections);
+    }
+
+    #renderSectionOptions(sections) {
+        const select = this.#elements.sectionSelect;
+        if (!select) return;
+
+        select.innerHTML = '';
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        placeholder.defaultSelected = true;
+        placeholder.textContent = sections.length > 0 ? 'Choose a missing section...' : 'No missing sections';
+        select.appendChild(placeholder);
+
+        sections.forEach(section => {
+            const option = document.createElement('option');
+            option.value = section.id;
+            option.textContent = section.label;
+            select.appendChild(option);
+        });
+
+        if (this.#elements.saveBtn) {
+            this.#elements.saveBtn.disabled = sections.length === 0;
+        }
+    }
+
+    #renderMissingSectionsMenu(sections) {
+        const dropdownMenu = document.getElementById('missing-sections-menu');
+        if (!dropdownMenu) return;
+
+        dropdownMenu.innerHTML = '';
+
+        if (sections.length === 0) {
+            const li = document.createElement('li');
+            const span = document.createElement('span');
+            span.className = 'dropdown-item-text text-muted';
+            span.textContent = 'No missing sections';
+            li.appendChild(span);
+            dropdownMenu.appendChild(li);
+            return;
+        }
+
+        sections.forEach(section => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.className = 'dropdown-item';
+            a.href = `#section-${section.id}`;
+            a.textContent = section.label;
+            a.dataset.id = section.id;
+
+            li.appendChild(a);
+            dropdownMenu.appendChild(li);
+        });
     }
 
     async #fetchActiveBudget() {
