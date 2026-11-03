@@ -21,7 +21,11 @@ class BudgetDetailsManager extends BaseManager {
         addModal: document.getElementById('addCategoryModal'),
         sectionSelect: document.getElementById('newSectionCategory'),
         projectionInput: document.getElementById('newCategoryBudget'),
-        saveBtn: document.getElementById('saveNewCategoryBtn')
+        saveBtn: document.getElementById('saveNewCategoryBtn'),
+        projectionToggle: document.getElementById('projectionToggle'),
+        projectionDetails: document.getElementById('projectionDetails'),
+        spent: document.getElementById('spentValue'),
+        encumberedRemaining: document.getElementById('encumberedRemainingValue')
     };
 
     constructor() {
@@ -33,6 +37,15 @@ class BudgetDetailsManager extends BaseManager {
 
     #setupEventListeners() {
         this.#elements.refreshBtn?.addEventListener('click', () => this.refreshData({ isInitial: false }));
+
+        const details = this.#elements.projectionDetails;
+        const detailsIcon = this.#elements.projectionToggle?.querySelector('i');
+        details?.addEventListener('show.bs.collapse', () => {
+            detailsIcon?.classList.replace('bi-chevron-down', 'bi-chevron-up');
+        });
+        details?.addEventListener('hide.bs.collapse', () => {
+            detailsIcon?.classList.replace('bi-chevron-up', 'bi-chevron-down');
+        });
 
         if (this.#elements.addForm) {
             this.#elements.addForm.addEventListener('submit', async (e) => {
@@ -224,6 +237,14 @@ class BudgetDetailsManager extends BaseManager {
         const budget = this.#budget;
         if (this.#elements.title) this.#elements.title.textContent = budget.label || 'Budget Details';
         if (this.#elements.projection) this.#elements.projection.textContent = Formatter.formatCurrency(budget.projection || 0);
+        if (this.#elements.spent) {
+            this.#elements.spent.textContent = Formatter.formatCurrency(budget.budget_spent || 0);
+        }
+        if (this.#elements.encumberedRemaining) {
+            this.#elements.encumberedRemaining.textContent = Formatter.formatCurrency(
+                budget.budget_encumbered_remaining || 0
+            );
+        }
 
         const sections = budget.sections || [];
         if (sections.length === 0) {
