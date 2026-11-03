@@ -10,13 +10,20 @@ class TransactionManager extends BaseManager {
         list: document.getElementById('transactionList'),
         modal: document.getElementById('transactionModal'),
         form: document.getElementById('transactionForm'),
+        count: document.getElementById('pendingCount'),
+        panel: document.getElementById('pendingPanel'),
         toggleDetailsBtn: document.getElementById('toggleDetails'),
+        prevButton: document.getElementById('prevButton'),
+        nextButton: document.getElementById('nextButton'),
         saveButton: document.getElementById('saveButton'),
-        detailsArea: document.getElementById('additionalDetails')
+        detailsArea: document.getElementById('additionalDetails'),
+        budgetSelect: document.getElementById('budgetSelect'),
+        categorySelect: document.getElementById('categorySelect')
     };
 
     #bsModal = null;
     #transactions = [];
+    #currentIndex = -1;
     #currentId = null;
 
     constructor() {
@@ -24,19 +31,31 @@ class TransactionManager extends BaseManager {
         this.#bsModal = this.getModal(this.#elements.modal);
         this.#setupEventListeners();
         this.init();
+        this.#loadOptions();
     }
 
     #setupEventListeners() {
         this.#elements.toggleDetailsBtn?.addEventListener('click', () => this.#toggleDetails());
         this.#elements.saveButton?.addEventListener('click', () => this.#handleSave());
-        
+
+        this.#elements.panel?.addEventListener('click', () => this.#openFirst());
+        this.#elements.panel?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.#openFirst();
+            }
+        });
+
+        this.#elements.prevButton?.addEventListener('click', () => this.#selectAt(this.#currentIndex - 1));
+        this.#elements.nextButton?.addEventListener('click', () => this.#selectAt(this.#currentIndex + 1));
+
         // Event delegation for categorize buttons
         this.#elements.list?.addEventListener('click', (e) => {
             const btn = e.target.closest('.categorize-btn');
             if (btn) {
                 const id = btn.getAttribute('data-id');
-                const transaction = this.#transactions.find(t => t.id === id);
-                this.#selectTransaction(transaction);
+                const index = this.#transactions.findIndex(t => String(t.id) === id);
+                if (index !== -1) this.#selectAt(index);
             }
         });
     }
@@ -45,10 +64,65 @@ class TransactionManager extends BaseManager {
         try {
             const data = await ApiService.fetchJson('/api/transactions/uncategorize/');
             this.#transactions = data || [];
+            this.#currentIndex = -1;
+            this.#currentId = null;
+            this.#updateCount();
             this.#render();
         } catch (error) {
+            this.#transactions = [];
+            this.#currentIndex = -1;
+            this.#updateCount();
             this.renderError(this.#elements.list, 'Failed to load transactions.');
         }
+    }
+
+    async #loadOptions() {
+        try {
+            const budgets = await ApiService.fetchJson('/api/budgets/active/');
+            this.#populateSelect(this.#elements.budgetSelect, budgets || [], b => b.label);
+        } catch (error) {
+            NotificationService.show('Failed to load budgets', 'danger');
+        }
+
+        try {
+            const categories = await ApiService.fetchJson('/api/subcategory/');
+            this.#populateSelect(
+                this.#elements.categorySelect,
+                categories || [],
+                c => (c.parent_label ? `(${c.parent_label}) ${c.label}` : c.label)
+            );
+        } catch (error) {
+            NotificationService.show('Failed to load categories', 'danger');
+        }
+    }
+
+    #populateSelect(select, items, labelFn) {
+        if (!select) return;
+        while (select.options.length > 1) select.remove(1);
+        for (const item of items) {
+            select.add(new Option(labelFn(item), item.id));
+        }
+    }
+
+    #updateCount() {
+        if (this.#elements.count) this.#elements.count.textContent = this.#transactions.length;
+    }
+
+    #openFirst() {
+        if (this.#transactions.length === 0) return;
+        this.#selectAt(0);
+    }
+
+    #selectAt(index) {
+        if (index < 0 || index >= this.#transactions.length) return;
+        this.#currentIndex = index;
+        this.#selectTransaction(this.#transactions[index]);
+    }
+
+    #updateNavigation() {
+        const { prevButton, nextButton } = this.#elements;
+        if (prevButton) prevButton.disabled = this.#currentIndex <= 0;
+        if (nextButton) nextButton.disabled = this.#currentIndex >= this.#transactions.length - 1;
     }
 
     #toggleDetails() {
@@ -91,9 +165,9 @@ class TransactionManager extends BaseManager {
 
     #selectTransaction(transaction) {
         if (!transaction) return;
-        
+
         this.#currentId = transaction.id;
-        
+
         // Fill form
         const mapping = {
             'modalCommerce': transaction.commerce,
@@ -103,14 +177,24 @@ class TransactionManager extends BaseManager {
             'modalCard': transaction.card
         };
 
-        for (const [id, value] of Object.entries(mapping)) {
+        for (const [id, rawValue] of Object.entries(mapping)) {
             const el = document.getElementById(id);
-            if (el) el.value = value || '';
+            if (!el) continue;
+            const value = rawValue ?? '';
+            if ('value' in el) {
+                el.value = value;
+            } else {
+                el.textContent = value;
+            }
         }
 
-        // Reset details view
+        // Reset per-transaction selections and details view
+        this.#elements.budgetSelect.value = '';
+        this.#elements.categorySelect.value = '';
         this.#elements.detailsArea.classList.add('d-none');
         this.#elements.toggleDetailsBtn.textContent = 'Show More Details';
+
+        this.#updateNavigation();
 
         this.#bsModal?.show();
     }
@@ -123,8 +207,8 @@ class TransactionManager extends BaseManager {
 
         const data = {
             id: this.#currentId,
-            budget: document.getElementById('budgetSelect').value,
-            category: document.getElementById('categorySelect').value
+            budget: this.#elements.budgetSelect.value,
+            category: this.#elements.categorySelect.value
         };
 
         try {
@@ -134,7 +218,7 @@ class TransactionManager extends BaseManager {
             });
 
             this.#bsModal?.hide();
-            NotificationService.show('Transaction categorized!', 'success');
+            NotificationService.show('Transaction categorized successfully!', 'success');
             await this.init();
         } catch (error) {
             NotificationService.show('Failed to save transaction', 'danger');
