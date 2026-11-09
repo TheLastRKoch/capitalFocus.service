@@ -9,6 +9,8 @@ class BudgetDetailsManager extends BaseManager {
     #budgetId = null;
     #budget = null;
     #isRefreshing = false;
+    #editingSectionId = null;
+    #missingSections = [];
     #elements = {
         title: document.getElementById('budgetTitle'),
         projection: document.getElementById('projectionValue'),
@@ -19,6 +21,7 @@ class BudgetDetailsManager extends BaseManager {
         refreshBtn: document.getElementById('refreshSections'),
         addForm: document.getElementById('addCategoryForm'),
         addModal: document.getElementById('addCategoryModal'),
+        modalTitle: document.getElementById('addCategoryTitle'),
         sectionSelect: document.getElementById('newSectionCategory'),
         projectionInput: document.getElementById('newCategoryBudget'),
         saveBtn: document.getElementById('saveNewCategoryBtn'),
@@ -37,6 +40,7 @@ class BudgetDetailsManager extends BaseManager {
 
     #setupEventListeners() {
         this.#elements.refreshBtn?.addEventListener('click', () => this.refreshData({ isInitial: false }));
+        this.#elements.addModal?.addEventListener('hidden.bs.modal', () => this.#resetSectionModal());
 
         const details = this.#elements.projectionDetails;
         const detailsIcon = this.#elements.projectionToggle?.querySelector('i');
@@ -61,27 +65,41 @@ class BudgetDetailsManager extends BaseManager {
 
         if (!select || !projectionInput || !this.#budgetId) return;
 
-        const selectedOption = select.selectedOptions[0];
-        const categoryId = Number.parseInt(select.value, 10);
         const projection = Number.parseFloat(projectionInput.value);
-
-        if (!selectedOption || !Number.isFinite(categoryId) || !Number.isFinite(projection)) {
+        if (!Number.isFinite(projection)) {
+            projectionInput.reportValidity();
             return;
         }
 
-        const payload = {
-            label: selectedOption.textContent.trim(),
-            category_id: categoryId,
-            projection
-        };
+        const isEdit = this.#editingSectionId !== null;
+        const selectedOption = select.selectedOptions[0];
+        const categoryId = Number.parseInt(select.value, 10);
+
+        if (!isEdit && (!selectedOption || !Number.isFinite(categoryId))) {
+            select.reportValidity();
+            return;
+        }
 
         try {
-            await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections/`, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+            if (isEdit) {
+                await ApiService.fetchJson(`/api/sections/${this.#editingSectionId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ projection })
+                });
+                NotificationService.show('Section updated successfully!', 'success');
+            } else {
+                const payload = {
+                    label: selectedOption.textContent.trim(),
+                    category_id: categoryId,
+                    projection
+                };
 
-            NotificationService.show('Section created successfully!', 'success');
+                await ApiService.fetchJson(`/api/budgets/${this.#budgetId}/sections/`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                NotificationService.show('Section created successfully!', 'success');
+            }
 
             // Reset form and close modal
             this.#elements.addForm.reset();
@@ -90,8 +108,51 @@ class BudgetDetailsManager extends BaseManager {
             // Refresh data smoothly in-place
             await this.refreshData({ isInitial: false });
         } catch (error) {
-            NotificationService.show('Failed to create section.', 'danger');
+            NotificationService.show(isEdit ? 'Failed to update section.' : 'Failed to create section.', 'danger');
         }
+    }
+
+    #openEditSection(sectionId) {
+        const section = this.#budget?.sections?.find(s => String(s.id) === String(sectionId));
+        if (!section) return;
+
+        this.#editingSectionId = section.id;
+
+        if (this.#elements.modalTitle) this.#elements.modalTitle.textContent = 'Edit Section';
+        if (this.#elements.saveBtn) {
+            this.#elements.saveBtn.textContent = 'Save Changes';
+            this.#elements.saveBtn.disabled = false;
+        }
+
+        const select = this.#elements.sectionSelect;
+        if (select) {
+            select.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = section.category_id ?? '';
+            option.textContent = section.label;
+            option.selected = true;
+            select.appendChild(option);
+            select.disabled = true;
+        }
+
+        if (this.#elements.projectionInput) {
+            this.#elements.projectionInput.value = section.projection ?? '';
+        }
+
+        this.getModal(this.#elements.addModal)?.show();
+    }
+
+    #resetSectionModal() {
+        this.#editingSectionId = null;
+
+        if (this.#elements.modalTitle) this.#elements.modalTitle.textContent = 'New Section';
+        if (this.#elements.saveBtn) this.#elements.saveBtn.textContent = 'Save';
+        if (this.#elements.projectionInput) this.#elements.projectionInput.value = '';
+
+        const select = this.#elements.sectionSelect;
+        if (select) select.disabled = false;
+
+        this.#renderSectionOptions(this.#missingSections);
     }
 
     #getBudgetIdFromUrl() {
@@ -162,8 +223,8 @@ class BudgetDetailsManager extends BaseManager {
             console.error('Failed to fetch missing sections:', error);
         }
 
+        this.#missingSections = missingSections;
         this.#renderSectionOptions(missingSections);
-        this.#renderMissingSectionsMenu(missingSections);
     }
 
     #renderSectionOptions(sections) {
@@ -190,35 +251,6 @@ class BudgetDetailsManager extends BaseManager {
         if (this.#elements.saveBtn) {
             this.#elements.saveBtn.disabled = sections.length === 0;
         }
-    }
-
-    #renderMissingSectionsMenu(sections) {
-        const dropdownMenu = document.getElementById('missing-sections-menu');
-        if (!dropdownMenu) return;
-
-        dropdownMenu.innerHTML = '';
-
-        if (sections.length === 0) {
-            const li = document.createElement('li');
-            const span = document.createElement('span');
-            span.className = 'dropdown-item-text text-muted';
-            span.textContent = 'No missing sections';
-            li.appendChild(span);
-            dropdownMenu.appendChild(li);
-            return;
-        }
-
-        sections.forEach(section => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.className = 'dropdown-item';
-            a.href = `#section-${section.id}`;
-            a.textContent = section.label;
-            a.dataset.id = section.id;
-
-            li.appendChild(a);
-            dropdownMenu.appendChild(li);
-        });
     }
 
     async #fetchActiveBudget() {
@@ -260,8 +292,9 @@ class BudgetDetailsManager extends BaseManager {
         const sectionsHtml = sections.map((sec, index) => this.#createSectionHtml(sec, index, openCollapseIds)).join('');
         if (this.#elements.accordion) this.#elements.accordion.innerHTML = sectionsHtml;
 
-        // Setup event listeners for balance buttons
+        // Setup event listeners for section actions
         this.#setupBalanceButtons();
+        this.#setupEditButtons();
         this.#updateOverview();
     }
 
@@ -286,6 +319,16 @@ class BudgetDetailsManager extends BaseManager {
                     btn.disabled = false;
                     icon?.classList.remove('spin-animation');
                 }
+            });
+        });
+    }
+
+    #setupEditButtons() {
+        const editButtons = this.#elements.accordion?.querySelectorAll('[data-edit-btn]');
+        editButtons?.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.#openEditSection(btn.dataset.sectionId);
             });
         });
     }
@@ -330,29 +373,40 @@ class BudgetDetailsManager extends BaseManager {
         return `
             <div class="card mb-3 border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle ${isOpen ? '' : 'collapsed'}"
-                            data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isOpen ? 'true' : 'false'}">
-                            <i class="bi bi-chevron-down accordion-chevron"></i>
-                            <span class="fw-medium">${Formatter.escapeHtml(section.label)}</span>
-                            <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
-                            <span class="ms-3 small fw-bold ${remaining < 0 ? 'text-danger' : 'text-success'}">
-                                Rem: ${Formatter.formatCurrency(remaining)}
-                            </span>
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 border-0" 
-                            data-balance-btn
-                            data-section-id="${sectionId}"
-                            data-budget-id="${this.#budgetId}"
-                            data-remaining="${remaining}"
-                            data-projection="${section.projection || 0}">
-                            <i class="bi bi-brilliance"></i>  Balance
-                        </button>
-                    </div>
+                    <button class="btn btn-link text-dark text-decoration-none p-0 d-flex align-items-center gap-3 accordion-toggle ${isOpen ? '' : 'collapsed'}"
+                        data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${isOpen ? 'true' : 'false'}">
+                        <i class="bi bi-chevron-down accordion-chevron"></i>
+                        <span class="fw-medium">${Formatter.escapeHtml(section.label)}</span>
+                        <span class="text-muted ms-3 small">Proj: ${Formatter.formatCurrency(section.projection)}</span>
+                        <span class="ms-3 small fw-bold ${remaining < 0 ? 'text-danger' : 'text-success'}">
+                            Rem: ${Formatter.formatCurrency(remaining)}
+                        </span>
+                    </button>
                 </div>
                 <div id="${collapseId}" class="collapse ${isOpen ? 'show' : ''}">
                     <div class="card-body pt-0">
-                        <div class="table-responsive">
+                        <div class="d-flex align-items-center justify-content-between gap-3 py-3 border-bottom">
+                            <span class="text-muted small">
+                                Total expended
+                                <span class="fw-bold text-dark ms-2">${Formatter.formatCurrency(section.total_spent || 0)}</span>
+                            </span>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 border-0"
+                                    data-balance-btn
+                                    data-section-id="${sectionId}"
+                                    data-budget-id="${this.#budgetId}"
+                                    data-remaining="${remaining}"
+                                    data-projection="${section.projection || 0}">
+                                    <i class="bi bi-brilliance"></i> Balance
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 border-0"
+                                    data-edit-btn
+                                    data-section-id="${sectionId}">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive pt-3">
                             <table class="table table-borderless mb-0">
                                 <thead>
                                     <tr class="border-bottom">
