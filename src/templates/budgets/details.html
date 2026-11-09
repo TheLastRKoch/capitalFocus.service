@@ -34,12 +34,29 @@
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <span class="summary-label">Budget projection</span>
-                    <button class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal"
-                        data-bs-target="#editSummary">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" id="projectionToggle" class="btn btn-light btn-sm rounded-circle"
+                            data-bs-toggle="collapse" data-bs-target="#projectionDetails" aria-expanded="false"
+                            aria-controls="projectionDetails" aria-label="Toggle projection details">
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <button type="button" class="btn btn-light btn-sm rounded-circle" data-bs-toggle="modal"
+                            data-bs-target="#editSummary">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                    </div>
                 </div>
                 <span id="projectionValue" class="summary-value text-primary">0</span>
+                <div id="projectionDetails" class="collapse mt-3">
+                    <div class="d-flex justify-content-between align-items-center border-top pt-3 mb-2">
+                        <span class="text-muted small">Spent</span>
+                        <span id="spentValue" class="fw-bold small">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">Encumbered remaining</span>
+                        <span id="encumberedRemainingValue" class="fw-bold small">0</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
