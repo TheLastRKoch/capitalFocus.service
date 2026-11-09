@@ -44,6 +44,7 @@ urlpatterns = [
         ])),
     path('api/subcategory/',
          include([
+             path('', categories_views.api_subcategories, name='api_subcategories'),
              path('<str:id>/', categories_views.api_get_subcategory_by_id, name='api_get_subcategory_by_id'),
          ])),
     path(
