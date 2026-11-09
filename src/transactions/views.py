@@ -234,19 +234,34 @@ def api_list_missing_sections(request, id):
 @csrf_exempt
 def api_details(request, id):
     if request.method == 'PUT':
-        data = json.loads(request.body)
-        # Map the incoming data to Teable fields
-        # Note: Original Flask app might have had this logic in a service.
-        # Here we directly update for simplicity and parity.
-        fields = {
-            'budgets': [{
-                'id': data.get('budget')
-            }],
-            'sections': [{
-                'id': data.get('category')
-            }],
-            'status': 'Categorized'
-        }
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return JsonResponse({'error': 'Request body must be valid JSON.'}, status=400)
+
+        if not transactions_repo.get_by_id(id):
+            return JsonResponse({'error': 'Transaction not found.'}, status=404)
+
+        budget_id = data.get('budget')
+        category_id = data.get('category')
+
+        for value, model, label in ((budget_id, BudgetsModel, 'Budget'),
+                                    (category_id, SubcategoriesModel, 'Category')):
+            if value in (None, ''):
+                continue
+            try:
+                exists = model.objects.filter(pk=value).exists()
+            except (TypeError, ValueError):
+                exists = False
+            if not exists:
+                return JsonResponse({'error': f'{label} not found.'}, status=400)
+
+        fields = {'status': 'Categorized'}
+        if budget_id not in (None, ''):
+            fields['budgets_id'] = budget_id
+        if category_id not in (None, ''):
+            fields['subcategory_id'] = category_id
+
         return JsonResponse(transactions_repo.update(id, fields))
     return HttpResponse(status=405)
 
