@@ -1,4 +1,4 @@
-import { Formatter, NotificationService, BaseManager } from './app.js';
+import { ApiService, Formatter, NotificationService, BaseManager } from './app.js';
 
 class GlobalManager extends BaseManager {
     #dateInputId = 'entryDate';
@@ -17,6 +17,32 @@ class GlobalManager extends BaseManager {
         this.#setDefaultDate();
         this.#initEntryModals();
         this.#initSummaryModals();
+        this.#initUncategorizedIndicator();
+    }
+
+    #initUncategorizedIndicator() {
+        this.#fetchUncategorizedCount();
+        window.addEventListener('uncategorized:updated', (event) => {
+            this.#renderUncategorizedCount(event.detail?.count);
+        });
+    }
+
+    async #fetchUncategorizedCount() {
+        try {
+            const transactions = await ApiService.fetchJson('/api/transactions/uncategorize/');
+            this.#renderUncategorizedCount(Array.isArray(transactions) ? transactions.length : 0);
+        } catch (error) {
+            // Leave the badge hidden so a failed count never interrupts the page.
+        }
+    }
+
+    #renderUncategorizedCount(count) {
+        const badge = document.getElementById('uncategorizedBadge');
+        if (!badge) return;
+
+        const total = Number.isFinite(Number(count)) ? Number(count) : 0;
+        badge.textContent = total;
+        badge.classList.toggle('d-none', total <= 0);
     }
 
     #initAccordionChevrons() {

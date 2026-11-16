@@ -12,11 +12,19 @@
 - [x] 2.3 Populate the Budget select from `GET /api/budgets/active/` and the Category select from `GET /api/subcategory/`, keeping placeholders and notifying on failure; verify both selects show options after load and that a failing endpoint leaves its placeholder plus an error notification
 - [x] 2.4 Enforce Budget + Category selection before saving, submit `PUT /api/transactions/<id>/`, close the modal, show the success notification, and re-fetch the list/count; verify that an empty selection sends no request and a valid save removes the card and decrements the count
 - [x] 2.5 Remove the temporary "Open Modal (temp)" debug button from the template and confirm the page still opens the modal from the summary panel
+- [x] 2.6 Dispatch a `window` `uncategorized:updated` custom event carrying the current count whenever the page updates its count; verify the event fires on initial load and after a successful save
 
-## 3. Integration Verification
+## 3. Navigation Indicator
 
-- [x] 3.1 Run `openspec validate uncategorized-count-and-categorize-flow --strict` and confirm no errors or warnings
-- [x] 3.2 Perform an end-to-end manual pass: load the page, open the modal from the panel, navigate, categorize a transaction, and confirm the list, count, notification, and stored `Categorized` status all agree
+- [x] 3.1 Add an hourglass anchor (`bi-hourglass`, linking to `/transactions/uncategorize/`, `aria-label` naming the destination) immediately to the right of the bell in `base.html`, containing a badge element that starts hidden; verify every page renders the indicator and the badge is not visible before data loads
+- [x] 3.2 Add `#initUncategorizedIndicator()` to `GlobalManager` (`script.js`): fetch `/api/transactions/uncategorize/`, render `data.length` into the badge, keep the badge hidden at zero, and swallow failures so no notification is shown; verify on `/transactions/` that the badge matches the API count and that a forced failure leaves the indicator badge-less
+- [x] 3.3 Subscribe to `uncategorized:updated` in `GlobalManager` and write the event's count into the badge (hiding it at zero); verify that categorizing a transaction on `/transactions/uncategorize/` updates the badge without an extra request
+
+## 4. Integration Verification
+
+- [x] 4.1 Run `openspec validate uncategorized-count-and-categorize-flow --strict` and confirm no errors or warnings
+- [x] 4.2 Perform an end-to-end manual pass: load the page, open the modal from the panel, navigate, categorize a transaction, and confirm the list, count, notification, navigation badge, and stored `Categorized` status all agree
+- [x] 4.3 Confirm the navigation badge shows the same number as the "Pending Transactions" panel and that it is hidden when no uncategorized transactions remain
 
 ## Workflow follow-up
 
