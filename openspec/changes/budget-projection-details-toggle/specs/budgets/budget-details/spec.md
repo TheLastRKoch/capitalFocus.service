@@ -35,29 +35,35 @@ The Budget projection card on the budget details page SHALL include a down-arrow
 
 ### Requirement: Projection Details Content
 
-The expanded projection details area SHALL display the budget's `budget_spent` and `budget_encumbered_remaining` values returned by `GET /api/budgets/<id>/complete/`, each formatted as currency.
+The expanded projection details area SHALL display the budget's `budget_spent` and `budget_remaining` values returned by `GET /api/budgets/<id>/complete/`, each formatted as currency.
 
 #### Scenario: Values are displayed
 
-- **GIVEN** the complete-budget response contains `budget_spent` and `budget_encumbered_remaining`
+- **GIVEN** the complete-budget response contains `budget_spent` and `budget_remaining`
 - **WHEN** the details area is expanded
 - **THEN** the spent value shows the formatted `budget_spent` amount
-- **AND** the encumbered remaining value shows the formatted `budget_encumbered_remaining` amount
+- **AND** the remaining value shows the formatted `budget_remaining` amount
 
 #### Scenario: Missing values fall back to zero
 
-- **GIVEN** the response omits `budget_spent` or `budget_encumbered_remaining`
+- **GIVEN** the response omits `budget_spent` or `budget_remaining`
 - **WHEN** the details area is expanded
 - **THEN** the missing value is displayed as the formatted zero amount
 
+#### Scenario: Encumbered remaining is not displayed
+
+- **GIVEN** the complete-budget response contains `budget_encumbered_remaining`
+- **WHEN** the details area is expanded
+- **THEN** no encumbered remaining amount is shown in the projection card
+
 ### Requirement: Projection Details Refresh Consistency
 
-Refreshing budget data SHALL update the displayed spent and encumbered remaining values without changing whether the details area is expanded or collapsed.
+Refreshing budget data SHALL update the displayed spent and remaining values without changing whether the details area is expanded or collapsed.
 
 #### Scenario: Refresh updates values in place
 
 - **GIVEN** the details area is expanded
-- **WHEN** refreshed complete-budget data returns new `budget_spent` and `budget_encumbered_remaining` values
+- **WHEN** refreshed complete-budget data returns new `budget_spent` and `budget_remaining` values
 - **THEN** both displayed values update to the new amounts
 - **AND** the details area remains expanded
 
