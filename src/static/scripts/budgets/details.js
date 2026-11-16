@@ -28,7 +28,7 @@ class BudgetDetailsManager extends BaseManager {
         projectionToggle: document.getElementById('projectionToggle'),
         projectionDetails: document.getElementById('projectionDetails'),
         spent: document.getElementById('spentValue'),
-        encumberedRemaining: document.getElementById('encumberedRemainingValue')
+        budgetRemaining: document.getElementById('budgetRemainingValue')
     };
 
     constructor() {
@@ -272,9 +272,9 @@ class BudgetDetailsManager extends BaseManager {
         if (this.#elements.spent) {
             this.#elements.spent.textContent = Formatter.formatCurrency(budget.budget_spent || 0);
         }
-        if (this.#elements.encumberedRemaining) {
-            this.#elements.encumberedRemaining.textContent = Formatter.formatCurrency(
-                budget.budget_encumbered_remaining || 0
+        if (this.#elements.budgetRemaining) {
+            this.#elements.budgetRemaining.textContent = Formatter.formatCurrency(
+                budget.budget_remaining || 0
             );
         }
 
