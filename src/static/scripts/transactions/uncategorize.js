@@ -105,7 +105,9 @@ class TransactionManager extends BaseManager {
     }
 
     #updateCount() {
-        if (this.#elements.count) this.#elements.count.textContent = this.#transactions.length;
+        const count = this.#transactions.length;
+        if (this.#elements.count) this.#elements.count.textContent = count;
+        window.dispatchEvent(new CustomEvent('uncategorized:updated', { detail: { count } }));
     }
 
     #openFirst() {

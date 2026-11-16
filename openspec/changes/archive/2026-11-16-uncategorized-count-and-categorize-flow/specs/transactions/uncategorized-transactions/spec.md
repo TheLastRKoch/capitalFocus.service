@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines how the `/transactions/uncategorize/` page reports the number of uncategorized transactions and lets a user open a modal, navigate between those transactions, and categorize them by assigning a budget and category.
+Defines how the `/transactions/uncategorize/` page reports the number of uncategorized transactions, surfaces that same count in the global navigation, and lets a user open a modal, navigate between those transactions, and categorize them by assigning a budget and category.
 
 ## ADDED Requirements
 
@@ -28,6 +28,49 @@ The "Pending Transactions" summary panel on `/transactions/uncategorize/` SHALL 
 - **GIVEN** transactions exist with statuses `Categorized`, `Pending`, and `Uncategorized`
 - **WHEN** the count is computed
 - **THEN** only the `Uncategorized` transactions contribute to the displayed count
+
+### Requirement: Navigation Uncategorized Indicator
+
+Every page SHALL show an hourglass indicator (`bi-hourglass`) in the global navigation to the right of the bell icon, linking to `/transactions/uncategorize/` and carrying a badge at its top-right with the number of `Uncategorized` transactions derived from `GET /api/transactions/uncategorize/`. The badge SHALL be hidden when that count is zero.
+
+#### Scenario: Badge shows the pending count on any page
+
+- **GIVEN** the API returns 7 uncategorized transactions
+- **WHEN** any page finishes loading
+- **THEN** the navigation shows the hourglass indicator to the right of the bell
+- **AND** its badge displays `7`
+
+#### Scenario: Badge is hidden at zero
+
+- **GIVEN** the API returns an empty list
+- **WHEN** any page finishes loading
+- **THEN** the hourglass indicator is shown without a numeric badge
+
+#### Scenario: Navigation badge matches the panel
+
+- **GIVEN** the user is on `/transactions/uncategorize/`
+- **WHEN** the uncategorized list finishes loading
+- **THEN** the navigation badge and the "Pending Transactions" panel display the same number
+
+#### Scenario: Indicator navigates to the uncategorize page
+
+- **GIVEN** the hourglass indicator is visible
+- **WHEN** the user activates it
+- **THEN** the browser navigates to `/transactions/uncategorize/`
+
+#### Scenario: Badge updates after a categorization
+
+- **GIVEN** the user categorizes a transaction on `/transactions/uncategorize/`
+- **WHEN** the page refreshes its list
+- **THEN** the navigation badge shows the new count
+- **AND** the badge is hidden if no uncategorized transactions remain
+
+#### Scenario: Count source failure leaves the badge hidden
+
+- **GIVEN** `GET /api/transactions/uncategorize/` fails during page load
+- **WHEN** the page finishes loading
+- **THEN** the hourglass indicator is shown without a numeric badge
+- **AND** no error notification interrupts the page
 
 ### Requirement: Summary Panel Opens Categorization Modal
 
